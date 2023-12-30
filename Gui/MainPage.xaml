@@ -33,7 +33,7 @@
                         <Image Source="{Binding Source}"
                                WidthRequest="200"
                                HeightRequest="300"
-                               Aspect="AspectFill"
+                               Aspect="AspectFit"
                                Margin="5"/>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
