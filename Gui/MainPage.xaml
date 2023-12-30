@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Gui.MainPage"
              xmlns:vm="clr-namespace:Gui.ViewModels"
-             x:DataType="vm:MainViewModel"
              >
 
     <ContentPage.BindingContext>
-        <vm:MainViewModel/>
+        <vm:MainViewModel>
+        </vm:MainViewModel>
     </ContentPage.BindingContext>
     
     <ScrollView>
@@ -30,9 +30,9 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Image Source="https://aka.ms/campus.jpg" 
-                               WidthRequest="100"
-                               HeightRequest="100"
+                        <Image Source="{Binding Source}"
+                               WidthRequest="200"
+                               HeightRequest="300"
                                Aspect="AspectFill"
                                Margin="5"/>
                     </DataTemplate>
