@@ -67,8 +67,13 @@ namespace Gui.ViewModels
                     memoryStream3.Seek(0, SeekOrigin.Begin); // Ensure the MemoryStream is at the beginning
                     return memoryStream3;
                 });
-
-                ImageItems.Add(new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource3 });
+                
+                ImageItems.Add(
+                    new ImageItem 
+                    { 
+                        ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", 
+                        Source = streamImageSource3 
+                    });
             }
 
         }
