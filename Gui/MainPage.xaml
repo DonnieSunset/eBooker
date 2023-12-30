@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Gui.MainPage"
+             xmlns:vm="clr-namespace:Gui.ViewModels"
+             x:DataType="vm:MainViewModel"
+             >
+
+    <ContentPage.BindingContext>
+        <vm:MainViewModel/>
+    </ContentPage.BindingContext>
+    
+    <ScrollView>
+
+        <Grid RowSpacing="5" ColumnSpacing="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header or other content can go here (optional) -->
+            <!-- Replace this with your header content if needed -->
+
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding ImageItems}"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="3" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Image Source="https://aka.ms/campus.jpg" 
+                               WidthRequest="100"
+                               HeightRequest="100"
+                               Aspect="AspectFill"
+                               Margin="5"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+    </ScrollView>
+
+</ContentPage>
