@@ -11,20 +11,8 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace BE
 {
-    // todo: change firstOrDefault -> singleOrDefault
     public class Reader
     {
-        //public IEnumerable<MemoryStream> GetImages()
-        //{
-        //    string ebookFolder = @"P:\Ebooks\Romane";
-        //    IEnumerable<MemoryStream> result = new List<MemoryStream>();
-
-        //    foreach (var fileLoction in Directory.GetFiles(ebookFolder, "*", SearchOption.AllDirectories))
-        //    {
-        //        yield return GetImage(fileLoction);
-        //    }
-        //}
-
         public MemoryStream GetImage(string fileLoction)
         {
             try
@@ -160,6 +148,13 @@ namespace BE
             var opfFile = zipArchive.Entries.FirstOrDefault(
                x => x.Name.Equals("content.opf", StringComparison.CurrentCultureIgnoreCase));
 
+            // in some cases the opf files are named differently
+            if (opfFile == null) 
+            {
+                opfFile = zipArchive.Entries.FirstOrDefault(
+                   x => x.Name.EndsWith(".opf", StringComparison.CurrentCultureIgnoreCase));
+            }
+
             if (opfFile != null)
             {
                 var opfStream = opfFile.Open();
@@ -168,18 +163,25 @@ namespace BE
                 var manifest = root?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
 
                 var coverItem = manifest?.Elements().FirstOrDefault(x =>
+                    // all media based items
                     x.Name.LocalName == "item" &&
-                    x.Attribute("id") != null &&
-                    x.Attribute("id").Value.Contains("cover", StringComparison.CurrentCultureIgnoreCase) &&
                     x.Attribute("media-type") != null &&
-                    x.Attribute("media-type").Value.Contains("image", StringComparison.CurrentCultureIgnoreCase)
+                    x.Attribute("media-type").Value.Contains("image", StringComparison.CurrentCultureIgnoreCase) &&
+                        // that have something with cover in the id attribute
+                        (x.Attribute("id") != null &&
+                        x.Attribute("id").Value.Contains("cover", StringComparison.CurrentCultureIgnoreCase) ||
+                        // or in the properties attribute
+                        (x.Attribute("properties") != null &&
+                        x.Attribute("properties").Value.Contains("cover", StringComparison.CurrentCultureIgnoreCase)
+                        )
+                    )
                 );
 
                 string coverImageFileName = coverItem?.Attribute("href")?.Value;
                 if (coverImageFileName != null)
                 {
                     return zipArchive.Entries.FirstOrDefault(
-                        x => x.Name.Equals(coverImageFileName, StringComparison.CurrentCultureIgnoreCase));
+                        x => x.FullName.EndsWith(coverImageFileName, StringComparison.CurrentCultureIgnoreCase));
                 }
             }
 

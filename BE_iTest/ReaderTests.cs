@@ -27,7 +27,7 @@ namespace BE_iTest
             var reader = new Reader();
             var files = GetListOfTestData();
 
-            Assert.That(files.Count, Is.EqualTo(639));
+            Assert.That(files.Count, Is.EqualTo(638));
 
             foreach ( var file in files )
             {
