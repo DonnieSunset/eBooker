@@ -70,7 +70,8 @@ namespace Gui
         {
             var parentImage = (Image)sender;
             var book = (Book)parentImage.BindingContext;
-            
+
+            this.ImageThumb.Source = book.ConvertFromMemoryStream(book.ImageMemoryStream);
             this.EntryLocation.Text = book.FileLocation;
         }
     }

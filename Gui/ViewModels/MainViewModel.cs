@@ -13,16 +13,30 @@ namespace Gui.ViewModels
         public class Book(string fileLoction, Reader reader)
         {
             private Reader reader = reader;
+
+            public string ImagePath { get; set; }
             private StreamImageSource? imageSource = null;
+            private MemoryStream? imageMemoryStream = null;
 
             public string FileLocation { get; set; } = fileLoction;
-            public string ImagePath { get; set; }
+
+            public MemoryStream ImageMemoryStream 
+            {
+                get
+                {
+                    if (imageMemoryStream == null)
+                        imageMemoryStream = reader.GetImage(FileLocation);
+
+                    return imageMemoryStream;
+                }
+            }
+
             public StreamImageSource ImageSource 
             {
                 get
                 {
                     if (imageSource == null)
-                        imageSource = ConvertFromMemoryStream(reader.GetImage(FileLocation));
+                        imageSource = ConvertFromMemoryStream(ImageMemoryStream);
 
                     return imageSource;
                 }
@@ -32,14 +46,15 @@ namespace Gui.ViewModels
                 }
             }
 
-            private StreamImageSource ConvertFromMemoryStream(MemoryStream memoryStream)
+            public StreamImageSource ConvertFromMemoryStream(MemoryStream memoryStream)
             {
-                return (StreamImageSource)StreamImageSource.FromStream(() =>
-                {
-                    // Ensure the MemoryStream is at the beginning
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-                    return memoryStream;
-                });
+                memoryStream.Position = 0;
+                MemoryStream copied = new MemoryStream();
+                memoryStream.CopyTo(copied);
+                copied.Position = 0;
+                memoryStream.Position = 0;
+
+                return (StreamImageSource)StreamImageSource.FromStream(() => { return copied; });
             }
         }
 
