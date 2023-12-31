@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -6,14 +7,13 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace BE
 {
     // todo: change firstOrDefault -> singleOrDefault
     public class Reader
     {
-        internal const string ImageSourceRegex = "<img src=\"(.+?)\"";
-
         //public IEnumerable<MemoryStream> GetImages()
         //{
         //    string ebookFolder = @"P:\Ebooks\Romane";
@@ -31,7 +31,7 @@ namespace BE
             {
                 using var zipArchive = ZipFile.OpenRead(fileLoction);
 
-                var jpgFile = IdentifyCoverFile(zipArchive);
+                var jpgFile = IdentifyCoverFileWithFallbacks(zipArchive);
                 if (jpgFile != null)
                 {
                     using (Stream jpgDeflateStream = jpgFile.Open())
@@ -54,12 +54,16 @@ namespace BE
             }
         }
 
-        private ZipArchiveEntry? IdentifyCoverFile(ZipArchive zipArchive)
+        private ZipArchiveEntry? IdentifyCoverFileWithFallbacks(ZipArchive zipArchive)
         {
             ZipArchiveEntry? result = IdentifyCoverFileByCoverJpeg(zipArchive);
             if (result == null)
             {
                 result = IdentifyCoverFileByCoverHtml(zipArchive);
+                if (result == null)
+                {
+                    result = IdentifyCoverFileBySingularJpeg(zipArchive);
+                }
             }
 
             return result;
@@ -67,14 +71,30 @@ namespace BE
 
 
         /// <summary>
-        /// Easiest case, the cover file is in the named cover.jpg or cover.jpeg
+        /// Easy case, there is only one jpeg file in the whole zip
+        /// so we assume that must be the cover file, even if
+        /// its name might be totally misleading.
+        /// </summary>
+        private ZipArchiveEntry? IdentifyCoverFileBySingularJpeg(ZipArchive zipArchive)
+        {
+            return zipArchive.Entries.SingleOrDefault(
+                x =>
+                x.Name.EndsWith("jpg", StringComparison.CurrentCultureIgnoreCase) ||
+                x.Name.EndsWith("jpeg", StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        /// <summary>
+        /// Easy case, the cover file is in the named cover.jpg or cover.jpeg
         /// and its saved directly in the zip file.
         /// </summary>
         private ZipArchiveEntry? IdentifyCoverFileByCoverJpeg(ZipArchive zipArchive)
         {
-            return zipArchive.Entries.FirstOrDefault(
-                x => x.Name.EndsWith("cover.jpg", StringComparison.CurrentCultureIgnoreCase) || 
-                x.Name.EndsWith("cover.jpeg", StringComparison.CurrentCultureIgnoreCase));
+            return zipArchive.Entries.SingleOrDefault(
+                x => 
+                (x.Name.EndsWith("jpg", StringComparison.CurrentCultureIgnoreCase) || 
+                x.Name.EndsWith("jpeg", StringComparison.CurrentCultureIgnoreCase))
+                &&
+                x.Name.Contains("cover", StringComparison.CurrentCultureIgnoreCase));
         }
 
         /// <summary>
@@ -83,7 +103,10 @@ namespace BE
         private ZipArchiveEntry? IdentifyCoverFileByCoverHtml(ZipArchive zipArchive)
         {
             var coverHtml = zipArchive.Entries.FirstOrDefault(
-                x => x.Name.EndsWith("cover.html", StringComparison.CurrentCultureIgnoreCase));
+                x => 
+                x.Name.EndsWith("cover.html", StringComparison.CurrentCultureIgnoreCase) ||
+                x.Name.EndsWith("cover.xhtml", StringComparison.CurrentCultureIgnoreCase));
+
             if (coverHtml != null)
             {
                 var coverHtmlStream = coverHtml.Open();
@@ -121,13 +144,22 @@ namespace BE
         /// <returns>The cover image file if existing, null otherwise.</returns>
         internal string? GetImageSourceFromHtml(string htmlString)
         {
-            Match result = Regex.Match(htmlString, Reader.ImageSourceRegex);
+            var imageSourceRegexes = new List<string>
+            {
+                "<img src=\"(.+?)\"",
+                "<image.*xlink:href=\"(.+?)\".*/>"
+            };
 
-            if (result.Success &&
-                result.Groups.Count == 2 &&
-                result.Groups[1].Success)
-            { 
-                return result.Groups[1].Value;
+            foreach (var regex in imageSourceRegexes)
+            {
+                Match result = Regex.Match(htmlString, regex);
+
+                if (result.Success &&
+                    result.Groups.Count == 2 &&
+                    result.Groups[1].Success)
+                {
+                    return result.Groups[1].Value;
+                }
             }
 
             return null;
