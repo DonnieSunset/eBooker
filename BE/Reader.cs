@@ -63,6 +63,10 @@ namespace BE
                 if (result == null)
                 {
                     result = IdentifyCoverFileBySingularJpeg(zipArchive);
+                    if (result == null)
+                    {
+                        result = IdentfyCoverFileByOpf(zipArchive);
+                    }
                 }
             }
 
@@ -77,10 +81,18 @@ namespace BE
         /// </summary>
         private ZipArchiveEntry? IdentifyCoverFileBySingularJpeg(ZipArchive zipArchive)
         {
-            return zipArchive.Entries.SingleOrDefault(
-                x =>
-                x.Name.EndsWith("jpg", StringComparison.CurrentCultureIgnoreCase) ||
-                x.Name.EndsWith("jpeg", StringComparison.CurrentCultureIgnoreCase));
+            try
+            {
+                return zipArchive.Entries.SingleOrDefault(
+                    x =>
+                    x.Name.EndsWith("jpg", StringComparison.CurrentCultureIgnoreCase) ||
+                    x.Name.EndsWith("jpeg", StringComparison.CurrentCultureIgnoreCase));
+            }
+            catch 
+            {
+                // more than 1 results
+                return null; 
+            }
         }
 
         /// <summary>
@@ -89,12 +101,20 @@ namespace BE
         /// </summary>
         private ZipArchiveEntry? IdentifyCoverFileByCoverJpeg(ZipArchive zipArchive)
         {
-            return zipArchive.Entries.SingleOrDefault(
-                x => 
-                (x.Name.EndsWith("jpg", StringComparison.CurrentCultureIgnoreCase) || 
-                x.Name.EndsWith("jpeg", StringComparison.CurrentCultureIgnoreCase))
-                &&
-                x.Name.Contains("cover", StringComparison.CurrentCultureIgnoreCase));
+            try
+            {
+                return zipArchive.Entries.SingleOrDefault(
+                    x =>
+                    (x.Name.EndsWith("jpg", StringComparison.CurrentCultureIgnoreCase) ||
+                    x.Name.EndsWith("jpeg", StringComparison.CurrentCultureIgnoreCase))
+                    &&
+                    x.Name.Contains("cover", StringComparison.CurrentCultureIgnoreCase));
+            }
+            catch
+            {
+                // more than 1 results
+                return null;
+            }
         }
 
         /// <summary>
@@ -102,12 +122,16 @@ namespace BE
         /// </summary>
         private ZipArchiveEntry? IdentifyCoverFileByCoverHtml(ZipArchive zipArchive)
         {
-            var coverHtml = zipArchive.Entries.FirstOrDefault(
-                x => 
-                x.Name.EndsWith("cover.html", StringComparison.CurrentCultureIgnoreCase) ||
-                x.Name.EndsWith("cover.xhtml", StringComparison.CurrentCultureIgnoreCase));
+            var coverHtmlPages = zipArchive.Entries.Where(
+                x =>
+                x.Name.Equals("cover.html", StringComparison.CurrentCultureIgnoreCase) ||
+                x.Name.Equals("cover.xhtml", StringComparison.CurrentCultureIgnoreCase) ||
+                //x.Name.Equals("title.html", StringComparison.CurrentCultureIgnoreCase) ||
+                //x.Name.Equals("title.xhtml", StringComparison.CurrentCultureIgnoreCase) ||
+                x.Name.Equals("titlepage.html", StringComparison.CurrentCultureIgnoreCase) ||
+                x.Name.Equals("titlepage.xhtml", StringComparison.CurrentCultureIgnoreCase));
 
-            if (coverHtml != null)
+            foreach (var coverHtml in coverHtmlPages)
             {
                 var coverHtmlStream = coverHtml.Open();
                 StreamReader reader = new StreamReader(coverHtmlStream);
@@ -116,10 +140,46 @@ namespace BE
                 var coverFile = GetImageSourceFromHtml(htmlString);
                 if (coverFile != null)
                 {
+                    // sometimes the references look like
+                    // <image width="487" height="800" xlink:href="../Images/cover.jpg"/>
+                    // then we have to cut of the "../" from the path
+                    coverFile = coverFile.Replace("../", "");
+
                     var coverJpg = zipArchive.Entries.FirstOrDefault(
-                        x => x.Name.EndsWith(coverFile, StringComparison.CurrentCultureIgnoreCase));
+                        x => x.FullName.EndsWith(coverFile, StringComparison.CurrentCultureIgnoreCase));
 
                     return coverJpg;
+                }
+            }
+
+            return null;
+        }
+
+        private ZipArchiveEntry? IdentfyCoverFileByOpf(ZipArchive zipArchive)
+        {
+            var opfFile = zipArchive.Entries.FirstOrDefault(
+               x => x.Name.Equals("content.opf", StringComparison.CurrentCultureIgnoreCase));
+
+            if (opfFile != null)
+            {
+                var opfStream = opfFile.Open();
+                XDocument xmlDoc1 = XDocument.Load(opfStream);
+                var root = xmlDoc1.Root;
+                var manifest = root?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
+
+                var coverItem = manifest?.Elements().FirstOrDefault(x =>
+                    x.Name.LocalName == "item" &&
+                    x.Attribute("id") != null &&
+                    x.Attribute("id").Value.Contains("cover", StringComparison.CurrentCultureIgnoreCase) &&
+                    x.Attribute("media-type") != null &&
+                    x.Attribute("media-type").Value.Contains("image", StringComparison.CurrentCultureIgnoreCase)
+                );
+
+                string coverImageFileName = coverItem?.Attribute("href")?.Value;
+                if (coverImageFileName != null)
+                {
+                    return zipArchive.Entries.FirstOrDefault(
+                        x => x.Name.Equals(coverImageFileName, StringComparison.CurrentCultureIgnoreCase));
                 }
             }
 
@@ -146,7 +206,7 @@ namespace BE
         {
             var imageSourceRegexes = new List<string>
             {
-                "<img src=\"(.+?)\"",
+                "<img.*src=\"(.+?)\"",
                 "<image.*xlink:href=\"(.+?)\".*/>"
             };
 
