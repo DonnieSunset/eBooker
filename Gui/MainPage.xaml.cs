@@ -1,5 +1,6 @@
 ﻿using Gui.ViewModels;
 using Microsoft.Maui.Controls;
+using static Gui.ViewModels.MainViewModel;
 
 namespace Gui
 {
@@ -27,45 +28,50 @@ namespace Gui
 
             MainViewModel myViewModel = (MainViewModel)this.BindingContext;
 
-            // Workaround because of
+            // Workaround
+            // Flexlayout cannot be bound to a data source in xaml
             // https://github.com/dotnet/maui/issues/7747
-            foreach (var item in myViewModel.ImageItems)
+            foreach (var book in myViewModel.BookList)
             {
                 var image = new Image
                 {
-                    Source = item.Source,
+                    BindingContext = book,
+                    Source = book.ImageSource,
+
                     WidthRequest = 200,
                     HeightRequest = 300,
                     Margin = new Thickness(10),
-
                     Shadow = shadowBlack,
                 };
 
                 var clickRecognizer = new PointerGestureRecognizer();
-                clickRecognizer.PointerPressed += (sender, @event) => DisplayMetaInformation(sender);
-                clickRecognizer.PointerEntered += (sender, @event) => ChangeToBlueShadow(sender);
-                clickRecognizer.PointerExited += (sender, @event) => ChangeToBlackShadow(sender);
+                clickRecognizer.PointerPressed += (sender, @event) => DisplayMetaInformation(sender!);
+                clickRecognizer.PointerEntered += (sender, @event) => ChangeToBlueShadow(sender!);
+                clickRecognizer.PointerExited += (sender, @event) => ChangeToBlackShadow(sender!);
                 image.GestureRecognizers.Add(clickRecognizer);
 
                 this.ImageFlexLayout.Children.Add(image);
             }
         }
 
-        private void ChangeToBlackShadow(object image)
+        private void ChangeToBlackShadow(object sender)
         {
-            var parentImage = (Image)image;
+            var parentImage = (Image)sender;
             parentImage.Shadow = shadowBlack;
         }
 
-        private void ChangeToBlueShadow(object image)
+        private void ChangeToBlueShadow(object sender)
         {
-            var parentImage = (Image)image;
+            var parentImage = (Image)sender;
             parentImage.Shadow = shadowBlue;
         }
 
-        private void DisplayMetaInformation(object image)
-        { 
-        
+        private void DisplayMetaInformation(object sender)
+        {
+            var parentImage = (Image)sender;
+            var book = (Book)parentImage.BindingContext;
+            
+            this.EntryLocation.Text = book.FileLocation;
         }
     }
 }

@@ -10,16 +10,16 @@ namespace BE
     public class Reader
     {
 
-        public IEnumerable<MemoryStream> GetImages()
-        {
-            string ebookFolder = @"P:\Ebooks\Romane";
-            IEnumerable<MemoryStream> result = new List<MemoryStream>();
+        //public IEnumerable<MemoryStream> GetImages()
+        //{
+        //    string ebookFolder = @"P:\Ebooks\Romane";
+        //    IEnumerable<MemoryStream> result = new List<MemoryStream>();
 
-            foreach (var fileLoction in Directory.GetFiles(ebookFolder, "*", SearchOption.AllDirectories))
-            {
-                yield return GetImage(fileLoction);
-            }
-        }
+        //    foreach (var fileLoction in Directory.GetFiles(ebookFolder, "*", SearchOption.AllDirectories))
+        //    {
+        //        yield return GetImage(fileLoction);
+        //    }
+        //}
 
         public MemoryStream GetImage(string fileLoction)
         {

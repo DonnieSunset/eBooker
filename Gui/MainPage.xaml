@@ -19,6 +19,9 @@
             <ColumnDefinition Width="250" />
         </Grid.ColumnDefinitions>
 
+
+        <!-- Middle Column: The Book Covers -->
+        
         <ScrollView Grid.Column="1">
 
             <FlexLayout Grid.Column="1"
@@ -29,6 +32,15 @@
             </FlexLayout>
     
         </ScrollView>
+
+        <!-- Right Column: The Book Metadata -->
+
+        <VerticalStackLayout Grid.Column="2">
+            <Label Text="Location:"/>
+            <Entry x:Name="EntryLocation" WidthRequest="200" HeightRequest="50" IsReadOnly="True"/>
+            <Label Text="Title"/>
+            <Entry x:Name="EntryTitle" WidthRequest="200" HeightRequest="50"/>
+        </VerticalStackLayout>
 
     </Grid>
 

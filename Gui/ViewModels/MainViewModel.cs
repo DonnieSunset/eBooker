@@ -8,74 +8,70 @@ namespace Gui.ViewModels
 {
     public class MainViewModel : BindableObject, INotifyPropertyChanged
     {
-        public class ImageItem
+        string ebookFolder = @"P:\Ebooks\Romane";
+
+        public class Book(string fileLoction, Reader reader)
         {
+            private Reader reader = reader;
+            private StreamImageSource? imageSource = null;
+
+            public string FileLocation { get; set; } = fileLoction;
             public string ImagePath { get; set; }
-            public StreamImageSource Source { get; set; }
+            public StreamImageSource ImageSource 
+            {
+                get
+                {
+                    if (imageSource == null)
+                        imageSource = ConvertFromMemoryStream(reader.GetImage(FileLocation));
+
+                    return imageSource;
+                }
+                set
+                {
+                    imageSource = value;
+                }
+            }
+
+            private StreamImageSource ConvertFromMemoryStream(MemoryStream memoryStream)
+            {
+                return (StreamImageSource)StreamImageSource.FromStream(() =>
+                {
+                    // Ensure the MemoryStream is at the beginning
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+                    return memoryStream;
+                });
+            }
         }
 
-        private ObservableCollection<ImageItem> _imageItems;
+        private ObservableCollection<Book> _books = new();
         private Reader reader = new Reader();
 
-        public ObservableCollection<ImageItem> ImageItems
+        public ObservableCollection<Book> BookList
         {
-            get => _imageItems;
+            get => _books;
             set
             {
-                _imageItems = value;
+                _books = value;
                 OnPropertyChanged();
             }
         }
 
         public MainViewModel()
         {
-            //MemoryStream memoryStream = reader.GetImage();
-            //MemoryStream memoryStream2 = reader.GetImage();
-
-            //StreamImageSource streamImageSource = (StreamImageSource)StreamImageSource.FromStream(() =>
+            //foreach (var memoryStream in reader.GetImages())
             //{
-            //    memoryStream.Seek(0, SeekOrigin.Begin); // Ensure the MemoryStream is at the beginning
-            //    return memoryStream;
-            //});
+            //    BookList.Add(
+            //        new Book 
+            //        { 
+            //            ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", 
+            //            Source = ConvertFromMemoryStream(memoryStream),
+            //        });
+            //}
 
-            //StreamImageSource streamImageSource2 = (StreamImageSource)StreamImageSource.FromStream(() =>
-            //{
-            //    memoryStream2.Seek(0, SeekOrigin.Begin); // Ensure the MemoryStream is at the beginning
-            //    return memoryStream2;
-            //});
-
-            ////StreamImageSource imageSource = (StreamImageSource)ImageSource.FromStream(() => { return bla; });
-
-            //// Hardcoded image paths, replace these with your actual image paths
-            ImageItems = new ObservableCollection<ImageItem>
-            {
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource },
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource2 },
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource },
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource },
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource },
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource },
-                //new ImageItem { ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", Source = streamImageSource },
-                // Add more image paths as needed
-
-            };
-
-            foreach (var memoryStream3 in reader.GetImages())
-            {
-                StreamImageSource streamImageSource3 = (StreamImageSource)StreamImageSource.FromStream(() =>
-                {
-                    memoryStream3.Seek(0, SeekOrigin.Begin); // Ensure the MemoryStream is at the beginning
-                    return memoryStream3;
-                });
-                
-                ImageItems.Add(
-                    new ImageItem 
-                    { 
-                        ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", 
-                        Source = streamImageSource3 
-                    });
+            foreach (var fileLoction in Directory.GetFiles(ebookFolder, "*", SearchOption.AllDirectories))
+            { 
+                BookList.Add(new Book(fileLoction, reader));
             }
-
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -84,7 +80,7 @@ namespace Gui.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+
     }
-
-
 }
