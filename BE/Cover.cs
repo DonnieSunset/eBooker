@@ -11,13 +11,13 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace BE
 {
-    public class Reader
+    internal class Cover
     {
-        public MemoryStream GetImage(string fileLoction)
+        public MemoryStream GetImage(ZipArchive zipArchive)
         {
             try
             {
-                using var zipArchive = ZipFile.OpenRead(fileLoction);
+                //using var zipArchive = ZipFile.OpenRead(fileLoction);
 
                 var jpgFile = IdentifyCoverFileWithFallbacks(zipArchive);
                 if (jpgFile != null)

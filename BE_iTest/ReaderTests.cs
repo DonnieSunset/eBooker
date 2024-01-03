@@ -15,7 +15,7 @@ namespace BE_iTest
         [TestCase("<center><img src=\"Image00008.jpg\" style=\"width:100%;height:100%;\"/>", "Image00008.jpg")]
         public void GetImageSourceFromHtmlTest(string htmlString, string expectedMatch)
         {
-            var reader = new Reader();
+            var reader = new Cover();
             var result = reader.GetImageSourceFromHtml(htmlString);
 
             Assert.That(result, Is.EqualTo(expectedMatch));
@@ -24,14 +24,13 @@ namespace BE_iTest
         [Test]
         public void ReadCoverImage()
         {
-            var reader = new Reader();
             var files = GetListOfTestData();
-
             Assert.That(files.Count, Is.EqualTo(638));
 
             foreach ( var file in files )
             {
-                var imageMemoryStream = reader.GetImage(file);
+                var eBook = new eBook(file);
+                var imageMemoryStream = eBook.GetCover();
                 Assert.That(imageMemoryStream.Length, Is.GreaterThan(0), $"Image Memory Stream Size for <{file}>.");
             }
         }

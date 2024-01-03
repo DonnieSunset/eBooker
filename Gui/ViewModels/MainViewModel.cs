@@ -1,7 +1,6 @@
 ﻿using BE;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace Gui.ViewModels
@@ -10,22 +9,21 @@ namespace Gui.ViewModels
     {
         string ebookFolder = @"P:\Ebooks\Romane";
 
-        public class Book(string fileLoction, Reader reader)
+        public class BookModel(string fileLoction)
         {
-            private Reader reader = reader;
-
             public string ImagePath { get; set; }
             private StreamImageSource? imageSource = null;
             private MemoryStream? imageMemoryStream = null;
 
             public string FileLocation { get; set; } = fileLoction;
+            private eBook eBook = new eBook(fileLoction);
 
             public MemoryStream ImageMemoryStream 
             {
                 get
                 {
                     if (imageMemoryStream == null)
-                        imageMemoryStream = reader.GetImage(FileLocation);
+                        imageMemoryStream = eBook.GetCover();
 
                     return imageMemoryStream;
                 }
@@ -58,10 +56,9 @@ namespace Gui.ViewModels
             }
         }
 
-        private ObservableCollection<Book> _books = new();
-        private Reader reader = new Reader();
+        private ObservableCollection<BookModel> _books = new();
 
-        public ObservableCollection<Book> BookList
+        public ObservableCollection<BookModel> BookList
         {
             get => _books;
             set
@@ -73,19 +70,9 @@ namespace Gui.ViewModels
 
         public MainViewModel()
         {
-            //foreach (var memoryStream in reader.GetImages())
-            //{
-            //    BookList.Add(
-            //        new Book 
-            //        { 
-            //            ImagePath = @"P:\Bilder\2011-02-14 09.29.43.jpg", 
-            //            Source = ConvertFromMemoryStream(memoryStream),
-            //        });
-            //}
-
-            foreach (var fileLoction in Directory.GetFiles(ebookFolder, "*", SearchOption.AllDirectories))
+            foreach (var fileLoctaion in Directory.GetFiles(ebookFolder, "*.epub", SearchOption.AllDirectories))
             { 
-                BookList.Add(new Book(fileLoction, reader));
+                BookList.Add(new BookModel(fileLoctaion));
             }
         }
 
@@ -95,7 +82,5 @@ namespace Gui.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-
     }
 }

@@ -69,7 +69,7 @@ namespace Gui
         private void DisplayMetaInformation(object sender)
         {
             var parentImage = (Image)sender;
-            var book = (Book)parentImage.BindingContext;
+            var book = (BookModel)parentImage.BindingContext;
 
             this.ImageThumb.Source = book.ConvertFromMemoryStream(book.ImageMemoryStream);
             this.EntryLocation.Text = book.FileLocation;
