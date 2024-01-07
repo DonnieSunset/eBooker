@@ -7,7 +7,7 @@ namespace Gui.ViewModels
 {
     public class MainViewModel : BindableObject, INotifyPropertyChanged
     {
-        string ebookFolder = @"P:\Ebooks\Romane";
+        string ebookFolder = @"C:\temp\EbookTestData\Romane";
 
         public class BookModel(string fileLoction)
         {
