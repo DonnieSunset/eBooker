@@ -37,5 +37,21 @@ namespace BE
 
             return resultContentItems;
         }
+
+        public static void RemoveCoverManifestEntries(XDocument opfDocument, List<string> iDs)
+        {
+            List<string> resultContentItems = new();
+
+            var xmlRoot = opfDocument.Root;
+            var xmlMetaData = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
+
+            var coverEntries = xmlMetaData?.Elements().Where(x =>
+                x.Name.LocalName == "item" &&
+                x.Attribute("id") != null &&
+                iDs.Contains(x.Attribute("id").Value)
+                );
+            
+            coverEntries.Remove();
+        }
     }
 }
