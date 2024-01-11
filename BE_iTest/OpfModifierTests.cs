@@ -131,5 +131,41 @@ namespace BE_iTest
 
             Assert.That(opfDoc.ToString(), Is.EqualTo(opfStringExpectedResult));
         }
+
+        [Test]
+        public void AddCoverEntry_Succeeds_EntriesIsAdded()
+        {
+            string opfString =
+                """
+                <package xmlns="http://www.idpf.org/2007/opf" version="2.0">
+                  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+                    <dc:title>someTitle</dc:title>
+                    <meta name="Author" content="someAuthor" />
+                  </metadata>
+                  <manifest>
+                  </manifest>
+                </package>
+                """;
+
+            string opfStringExpectedResult =
+                """
+                <package xmlns="http://www.idpf.org/2007/opf" version="2.0">
+                  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+                    <dc:title>someTitle</dc:title>
+                    <meta name="Author" content="someAuthor" />
+                    <meta name="cover" content="coverID" />
+                  </metadata>
+                  <manifest>
+                    <item href="cover1.jpg" id="coverID" media-type="image/jpeg" />
+                  </manifest>
+                </package>
+                """;
+
+            XDocument opfDoc = XDocument.Parse(opfString);
+
+            OpfModifier.AddCoverEntry(opfDoc, "cover1.jpg");
+
+            Assert.That(opfDoc.ToString(), Is.EqualTo(opfStringExpectedResult));
+        }
     }
 }
