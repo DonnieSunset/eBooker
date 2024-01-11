@@ -94,11 +94,11 @@ namespace BE
             var cover = new Cover();
 
             //this is the new logic
-            if (cover.HasCoverEntryInOpf(opfFile))
-            {
-                cover.DeleteCoverEntryInOpf(opfFile);
-                cover.AddCoverEntryInpf(opfFile);
-            }
+            //if (cover.HasCoverEntryInOpf(opfFile))
+            //{
+            //    cover.DeleteCoverEntryInOpf(opfFile);
+            //    cover.AddCoverEntryInpf(opfFile);
+            //}
 
             using (var opfStream = opfFile.Open())
             {

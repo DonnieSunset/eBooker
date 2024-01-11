@@ -197,17 +197,17 @@ namespace BE
             }
         }
 
-        string DeleteCoverEntriesFromMetaDataSection(XDocument opfDoc)
-        {
-            var xmlRoot = opfDoc.Root;
-            var xmlMetaData = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "metadata");
-            xmlMetaData?.Elements().Where(x =>
-                x.Name.LocalName == "meta" &&
-                x.Attributes("name").Count() == 1 &&
-                x.Attribute("name").Value.Equals("cover", StringComparison.CurrentCultureIgnoreCase)
-                ).Remove();
+        //string DeleteCoverEntriesFromMetaDataSection(XDocument opfDoc)
+        //{
+        //    var xmlRoot = opfDoc.Root;
+        //    var xmlMetaData = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "metadata");
+        //    xmlMetaData?.Elements().Where(x =>
+        //        x.Name.LocalName == "meta" &&
+        //        x.Attributes("name").Count() == 1 &&
+        //        x.Attribute("name").Value.Equals("cover", StringComparison.CurrentCultureIgnoreCase)
+        //        ).Remove();
                 
-        }
+        //}
 
 
         string GetCoverLinkFromMetaDataSection(XDocument opfDoc, string coverLinkId)
