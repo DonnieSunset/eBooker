@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace BE_iTest
 {
-    public class ReaderTests
+    public class EBookTests
     {
         string testDataFolder = @"C:\temp\EbookTestData";
         string coverFileLocation = @"C:\temp\EbookTestData\Special\IMG_20170605_133025.jpg";
@@ -45,7 +45,7 @@ namespace BE_iTest
         {
             var eBook = new eBook(@"C:\temp\EbookTestData\Special\Special_NoOpf.epub");
 
-            Assert.That(() => eBook.SetCover(coverFileLocation), Throws.InstanceOf<EbookerException>());
+            Assert.That(() => eBook.UpdateCover(coverFileLocation), Throws.InstanceOf<EbookerException>());
         }
 
         [Test]
@@ -53,11 +53,11 @@ namespace BE_iTest
         {
             var eBook = new eBook(@"C:\temp\EbookTestData\Special\Special_MultipleOpf.epub");
 
-            Assert.That(() => eBook.SetCover(coverFileLocation), Throws.InstanceOf<EbookerException>());
+            Assert.That(() => eBook.UpdateCover(coverFileLocation), Throws.InstanceOf<EbookerException>());
         }
 
         [Test]
-        public void SetCoverInOpf_CoverEntryAndCoverFileAlreadyExist_CoverEntryAndFileAreOverwritten()
+        public void UpdateCover_CoverEntryAndCoverFileAlreadyExist_CoverEntryAndFileAreOverwritten()
         {
             var ebookTempFileLocation = CreateLocalCopy(@"C:\temp\EbookTestData\Special\Special_StandardOpfCoverJpeg.epub");
             eBook eBook = null;
@@ -65,10 +65,8 @@ namespace BE_iTest
             try
             {
                 eBook = new eBook(ebookTempFileLocation);
-                eBook.SetCover(coverFileLocation);
+                eBook.UpdateCover(coverFileLocation);
                 eBook.Dispose();
-
-                //momentan noch problem: wenn schon existiert macht er einfach ein doppeltes entry
 
                 eBook = new eBook(ebookTempFileLocation);
                 var newCover = eBook.GetCoverArchiveEntry();
@@ -81,45 +79,9 @@ namespace BE_iTest
             }
             finally
             {
-                eBook?.Dispose();
+                eBook.Dispose();
                 File.Delete(ebookTempFileLocation);
             }
-        }
-
-        [Test]
-        public void HowWritingWorks()
-        {
-            var myFileLocation = @"C:\temp\Conrad, Joseph - Das Herz der Finsternis_mod.epub";
-            var eBook = new eBook(myFileLocation);
-
-            var opfFile = eBook.GetFromArchiveOpf();
-
-            XDocument xmlDoc1;
-            using (var opfStream = opfFile.Open())
-            {
-                xmlDoc1 = XDocument.Load(opfStream);
-                var root = xmlDoc1.Root;
-                var manifest = root?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
-
-                //add an additional item
-                manifest.Add(new XElement(manifest.GetDefaultNamespace() + "Stefan2",
-                    new XAttribute("FirstName", "Stef"),
-                    new XAttribute("SurName", "Holpp")
-                    ));
-            }
-
-            using (var opfStream = opfFile.Open())
-            { 
-                //write it back
-                //opfStream.SetLength(0);
-                using (StreamWriter writer = new StreamWriter(opfStream))
-                {
-                    writer.Write(xmlDoc1); //entry contents "baz123"
-                }
-            }
-
-            //Important, otherwise it will not get saved
-            //myZipArchive.Dispose();
         }
 
         private List<string> GetListOfTestData()

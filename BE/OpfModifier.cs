@@ -30,10 +30,14 @@ namespace BE
             return coverEntries.Select(x => x.Attribute("content").Value).ToList();
         }
 
-        public static void RemoveCoverManifestEntries(XDocument opfDocument, List<string> iDs)
+        public static List<string> RemoveCoverManifestEntries(XDocument opfDocument, List<string> iDs)
         {
             var coverEntries = IdentifyCoverManifestEntries(opfDocument, iDs);
+
+            var resultContentItems = coverEntries.Select(x => x.Attribute("href").Value).ToList();
             coverEntries.Remove();
+
+            return resultContentItems;
         }
 
         public static List<string> GetCoverManifestEntries(XDocument opfDocument, List<string> iDs)

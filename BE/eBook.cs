@@ -51,24 +51,39 @@ namespace BE
             return myCover.GetCoverFileByOpf(ZipArchiveRead);
         }
 
-        public void UpdateCover(string jpegFileLocation)
-        { }
-
         public void GetMetaInformation()
         { 
+            throw new NotImplementedException();
         }
 
         public void UpdateMetaInformation()
-        { }
-
-
-        public void SetCover(string coverFileLocation)
         {
-            var opfFile = GetFromArchiveOpf(writable:true);
+            throw new NotImplementedException();
+        }
 
-            WriteCoverMetaDataInOpf(opfFile);
 
-            WriteCoverFileToArchive(coverFileLocation);
+        public void UpdateCover(string coverFileLocation)
+        {
+            var opfFile = GetOpf(writable:true);
+
+            /// cover shall be placed always at the same folder level as the opf
+            /// such that we dont have to deal with relative paths
+            string relativePathOfOpfFile = opfFile.FullName.Replace(opfFile.Name, string.Empty);
+            string coverFileName = "cover.jpg";
+            string coverLocationInsideArchive = relativePathOfOpfFile + coverFileName;
+
+            using (var opfStream = opfFile.Open())
+            {
+                XDocument xmlDoc = XDocument.Load(opfStream);
+
+                var metaDataCoverIDs = OpfModifier.RemoveCoverMetaEntries(xmlDoc);
+                var existingCoverFiles = OpfModifier.RemoveCoverManifestEntries(xmlDoc, metaDataCoverIDs);
+                OpfModifier.AddCoverEntry(xmlDoc, coverFileName);
+                UpdateOpfInArchive(opfStream, xmlDoc);
+
+                RemoveCoverFilesFromArchive(relativePathOfOpfFile, existingCoverFiles);
+                WriteCoverFileToArchive(coverFileLocation, coverLocationInsideArchive);
+            }
 
             //Important, otherwise it will not get saved
             ZipArchiveUpdate.Dispose();
@@ -79,68 +94,44 @@ namespace BE
             myZipArchive?.Dispose();
         }
 
-
-        // We have to write the following into the opf:
-        // <package ...>
-        //  <metadata ...>
-        //    <meta name="cover" content="cover"/>
-        //  </metadata>
-        //  <manifest>
-        //    <item href="cover.jpg" id="cover" media-type="image/jpeg"/>
-        //  </manifest>
-        // </package>
-        private void WriteCoverMetaDataInOpf(ZipArchiveEntry opfFile)
+        private void UpdateOpfInArchive(Stream opfStream, XDocument xmlDoc)
         {
-            var cover = new Cover();
-
-            //this is the new logic
-            //if (cover.HasCoverEntryInOpf(opfFile))
-            //{
-            //    cover.DeleteCoverEntryInOpf(opfFile);
-            //    cover.AddCoverEntryInpf(opfFile);
-            //}
-
-            using (var opfStream = opfFile.Open())
+            opfStream.Position = 0;
+            using (StreamWriter writer = new StreamWriter(opfStream))
             {
-                XDocument xmlDoc = XDocument.Load(opfStream);
-                var xmlRoot = xmlDoc.Root;
-
-                var xmlMetaData = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "metadata");
-                xmlMetaData.Add(new XElement(xmlMetaData.GetDefaultNamespace() + "meta",
-                    new XAttribute("name", "cover"),
-                    new XAttribute("content", "cover")
-                    ));
-
-                var xmlManifest = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
-                xmlManifest.Add(new XElement(xmlManifest.GetDefaultNamespace() + "item",
-                    new XAttribute("href", "cover.jpg"),
-                    new XAttribute("id", "cover"),
-                    new XAttribute("media-type", "image/jpeg")
-                    ));
-
-                //write it back
-                opfStream.Position = 0;
-                using (StreamWriter writer = new StreamWriter(opfStream))
-                {
-                    writer.Write(xmlDoc);
-                }
+                writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + Environment.NewLine);
+                writer.Write(xmlDoc);
+                opfStream.SetLength(opfStream.Position);
             }
-
-            // todo: add relative path to cover file
-            // todo: overwrite existing tags
         }
 
-        public void WriteCoverFileToArchive(string coverFileLocation)
+        private void WriteCoverFileToArchive(string coverFileLocation, string coverFileLocationInArchive)
         {
-            ZipArchiveUpdate.CreateEntryFromFile(coverFileLocation, "cover.jpg");
+            ZipArchiveUpdate.CreateEntryFromFile(coverFileLocation, coverFileLocationInArchive);
+        }
 
-            // todo: add relative path to cover file
+        private void RemoveCoverFilesFromArchive(string relativePath, List<string> zipCoverEntries)
+        {
+            foreach (string zipCoverEntry in zipCoverEntries)
+            {
+                // there can also be multiple entries of the same file in a zip file, which is an error case, but should be handled 
+                var foundEntries = ZipArchiveUpdate.Entries.Where(x => x.FullName.Equals(relativePath + zipCoverEntry));
+                if (foundEntries.Count() == 0)
+                {
+                    throw new EbookerException($"Could not find referenced cover file with href <{zipCoverEntry}> in zipfile <{myFileLocation}>.");
+                }
+
+                foreach (var entry in foundEntries.ToArray())
+                { 
+                    entry.Delete();
+                }
+            }
         }
 
         // The returned object has a property "FullName" which contains the relative path
         // of the file, e.g. OEPBS/content.opf
         // and "Name", which would then be "content.opf".
-        internal ZipArchiveEntry GetFromArchiveOpf(bool writable=false)
+        internal ZipArchiveEntry GetOpf(bool writable=false)
         {
             ZipArchive archive;
             ZipArchiveEntry? opfFile;
