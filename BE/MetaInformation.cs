@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace BE
 {
-    internal class MetaInformation
+    public class MetaInformation
     {
+        public string ImageFileLocation { get; set; }
+
         public void Read()
         { 
         }

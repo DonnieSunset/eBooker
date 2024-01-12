@@ -26,6 +26,7 @@
                         x:Name="ImageFlexLayout"
                         Wrap="Wrap"
                         JustifyContent="SpaceAround"
+                        
                         >
             </FlexLayout>
     
@@ -61,6 +62,10 @@
             <Label Text="Language:" FontSize="12" VerticalTextAlignment="Start"/>
             <Entry x:Name="EntryLanguage" FontSize="12" HeightRequest="12"/>
 
+            <Frame BorderColor="White" HeightRequest="20"/>
+            <Button x:Name="ButtonSaveChanges" Text="Save Changes" IsEnabled="False"/>
+
+            <Label Text="{Binding ImageChangedDebugText, Mode=TwoWay}" FontSize="12" VerticalTextAlignment="Start"/>
         </VerticalStackLayout>
 
     </Grid>

@@ -9,14 +9,34 @@ namespace Gui.ViewModels
     {
         string ebookFolder = @"C:\temp\EbookTestData\Romane";
 
+        private bool _imageChanged = false;
+        public bool ImageChanged 
+        {
+            get { return _imageChanged; }
+            set
+            {
+                _imageChanged = value;
+                OnPropertyChanged(nameof(ImageChanged));
+            }
+        }
+
+        public string ImageChangedFileLocation = string.Empty;
+
+        public string ImageChangedDebugText
+        {
+            get { return $"Image changed: {ImageChanged.ToString()}"; }
+        }
+
+        public bool MetaDataChanged { get; set; } = false;
+
         public class BookModel(string fileLoction)
         {
-            public string ImagePath { get; set; }
+            private eBook eBook = new eBook(fileLoction);
+
             private StreamImageSource? imageSource = null;
             private MemoryStream? imageMemoryStream = null;
 
             public string FileLocation { get; set; } = fileLoction;
-            private eBook eBook = new eBook(fileLoction);
 
             public MemoryStream ImageMemoryStream 
             {
@@ -54,6 +74,11 @@ namespace Gui.ViewModels
 
                 return (StreamImageSource)StreamImageSource.FromStream(() => { return copied; });
             }
+
+            public void UpdateCover(string coverFileLocation)
+            {
+                eBook.UpdateCover(coverFileLocation);
+            }
         }
 
         private ObservableCollection<BookModel> _books = new();
@@ -78,9 +103,14 @@ namespace Gui.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged(string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+            if (propertyName == nameof(ImageChanged))
+            {
+                OnPropertyChanged(nameof(ImageChangedDebugText));
+            }
         }
     }
 }

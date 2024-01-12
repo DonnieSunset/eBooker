@@ -48,6 +48,7 @@ namespace BE
 
         public ZipArchiveEntry GetCoverArchiveEntry()
         {
+            //todo: replce this with OpfModifier
             return myCover.GetCoverFileByOpf(ZipArchiveRead);
         }
 
@@ -87,11 +88,13 @@ namespace BE
 
             //Important, otherwise it will not get saved
             ZipArchiveUpdate.Dispose();
+            this.Dispose();
         }
 
         public void Dispose()
         {
             myZipArchive?.Dispose();
+            myZipArchive = null;
         }
 
         private void UpdateOpfInArchive(Stream opfStream, XDocument xmlDoc)

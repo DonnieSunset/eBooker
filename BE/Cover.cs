@@ -11,7 +11,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace BE
 {
-    internal class Cover
+    public class Cover
     {
         public MemoryStream GetImage(ZipArchive zipArchive)
         {
@@ -39,6 +39,23 @@ namespace BE
             catch
             {
                 return new MemoryStream();
+            }
+        }
+
+        public static MemoryStream GetMemoryStreamFromFile(string fileLocation)
+        {
+            try
+            {
+                FileStream fileStream = new FileStream(fileLocation, FileMode.Open, FileAccess.Read);
+                Byte[] byteArray = new Byte[fileStream.Length];
+                fileStream.Read(byteArray, 0, byteArray.Length);
+                fileStream.Close();
+
+                return new MemoryStream(byteArray);
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
 
