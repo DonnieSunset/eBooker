@@ -1,6 +1,7 @@
 ﻿using BE;
 using Gui.ViewModels;
 using Microsoft.Maui.Controls;
+using System.Reflection;
 using System.Windows.Input;
 using static Gui.ViewModels.MainViewModel;
 
@@ -29,8 +30,9 @@ namespace Gui
         public MainPage()
         {
             InitializeComponent();
+            myViewModel = (MainViewModel)this.BindingContext;
 
-             myViewModel = (MainViewModel)this.BindingContext;
+            DisplayVersion();
 
             // Workaround
             // Flexlayout cannot be bound to a data source in xaml
@@ -114,13 +116,15 @@ namespace Gui
 
                 var pickOptions = new PickOptions() { FileTypes = FilePickerFileType.Jpeg };
                 var result = await FilePicker.Default.PickAsync(pickOptions);
+                if (result != null)
+                {
+                    var memStream = BE.Cover.GetMemoryStreamFromFile(result.FullPath);
+                    ImageThumb.Source = book.ConvertFromMemoryStream(memStream);
 
-                var memStream = BE.Cover.GetMemoryStreamFromFile(result.FullPath);
-                ImageThumb.Source = book.ConvertFromMemoryStream(memStream);
-
-                myViewModel.ImageChanged = true;
-                myViewModel.ImageChangedFileLocation = result.FullPath;
-                ButtonSaveChanges.IsEnabled = true;
+                    myViewModel.ImageChanged = true;
+                    myViewModel.ImageChangedFileLocation = result.FullPath;
+                    ButtonSaveChanges.IsEnabled = true;
+                }
             }
             catch
             {
@@ -130,7 +134,7 @@ namespace Gui
             }
         }
 
-        public async void ClickOnSaveChangesButton(object sender, EventArgs e)
+        private async void ClickOnSaveChangesButton(object sender, EventArgs e)
         {
             try
             {
@@ -156,6 +160,16 @@ namespace Gui
                 myViewModel.ImageChanged = false;
                 myViewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
+            }
+        }
+
+        private void DisplayVersion()
+        {
+            Version version = Assembly.GetEntryAssembly()?.GetName().Version;
+            if (version != null)
+            {
+                string versionString = $"Version: {version.Major}.{version.Minor}.{version.Build}";
+                LabelVersion.Text = versionString;
             }
         }
     }

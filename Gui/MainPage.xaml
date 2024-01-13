@@ -13,12 +13,14 @@
 
     <Grid
         ColumnDefinitions="300,*,400"
-        RowSpacing="5" 
-        ColumnSpacing="5">
+        RowDefinitions="*,20"
+        RowSpacing="10" 
+        ColumnSpacing="10">
             
         <!-- Middle Column: The Book Covers -->
         
         <ScrollView Grid.Column="1"
+                    Grid.RowSpan="2"
                     Background="WhiteSmoke"
                     >
 
@@ -34,7 +36,9 @@
 
         <!-- Right Column: The Book Metadata -->
 
-        <VerticalStackLayout Grid.Column="2">
+        <VerticalStackLayout 
+            Grid.Column="2"
+            Grid.Row="0">
             <Image x:Name="ImageThumb" WidthRequest="200" HeightRequest="300"/>
 
             <Frame BorderColor="White" HeightRequest="20"/>
@@ -66,8 +70,14 @@
             <Button x:Name="ButtonSaveChanges" Text="Save Changes" IsEnabled="False"/>
 
             <Label Text="{Binding ImageChangedDebugText, Mode=TwoWay}" FontSize="12" VerticalTextAlignment="Start"/>
+
         </VerticalStackLayout>
 
+        <Label
+            Grid.Column="2"
+            Grid.Row="1"
+            x:Name="LabelVersion" FontSize="10" HorizontalTextAlignment="End" Padding="5"
+            />
     </Grid>
 
 
