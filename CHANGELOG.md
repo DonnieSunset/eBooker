@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Ebook Store configurable by appsettings.json
+- Ebook Store configuration for Debug and Release
+
+### Changed
+
+### Fixed
+
 ## 0.1.0 2024-01-13
 
 Initial release

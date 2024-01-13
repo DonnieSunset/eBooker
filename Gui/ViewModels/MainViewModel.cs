@@ -7,8 +7,6 @@ namespace Gui.ViewModels
 {
     public class MainViewModel : BindableObject, INotifyPropertyChanged
     {
-        string ebookFolder = @"C:\temp\EbookTestData\Romane";
-
         private bool _imageChanged = false;
         public bool ImageChanged 
         {
@@ -24,10 +22,24 @@ namespace Gui.ViewModels
 
         public string ImageChangedDebugText
         {
-            get { return $"Image changed: {ImageChanged.ToString()}"; }
+            get { return $"Image changed: {ImageChanged}"; }
         }
 
         public bool MetaDataChanged { get; set; } = false;
+
+        public void SetupBookList(string location)
+        {
+            if (!Directory.Exists(location))
+            {
+                throw new Exception($"Directory for ebook story <{location}> does not exist.");
+            }
+
+            BookList.Clear();
+            foreach (var fileLoctaion in Directory.GetFiles(location, "*.epub", SearchOption.AllDirectories))
+            {
+                BookList.Add(new BookModel(fileLoctaion));
+            }
+        }
 
         public class BookModel(string fileLoction)
         {
@@ -90,14 +102,6 @@ namespace Gui.ViewModels
             {
                 _books = value;
                 OnPropertyChanged();
-            }
-        }
-
-        public MainViewModel()
-        {
-            foreach (var fileLoctaion in Directory.GetFiles(ebookFolder, "*.epub", SearchOption.AllDirectories))
-            { 
-                BookList.Add(new BookModel(fileLoctaion));
             }
         }
 

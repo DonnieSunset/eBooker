@@ -1,8 +1,6 @@
-﻿using BE;
-using Gui.ViewModels;
-using Microsoft.Maui.Controls;
+﻿using Gui.ViewModels;
+using Microsoft.Extensions.Configuration;
 using System.Reflection;
-using System.Windows.Input;
 using static Gui.ViewModels.MainViewModel;
 
 namespace Gui
@@ -30,30 +28,42 @@ namespace Gui
         public MainPage()
         {
             InitializeComponent();
+            DisplayVersion();
+            
+            var configuration = MauiProgram.Services.GetService<IConfiguration>();
+            var stores = configuration.Get<AppSettings>();
+
             myViewModel = (MainViewModel)this.BindingContext;
 
-            DisplayVersion();
-
-            // Workaround
-            // Flexlayout cannot be bound to a data source in xaml
-            // https://github.com/dotnet/maui/issues/7747
-            foreach (var book in myViewModel.BookList)
-            {
-                var image = CreateImageFromBookModel(book);
-                ImageFlexLayout.Children.Add(image);
-            }
+            PickerEbookStores.ItemsSource = stores.EBookStores;
+            PickerEbookStores.SelectedIndexChanged += PickerEbookStores_RebuildBookListAndFlexLayout;
+            PickerEbookStores.SelectedIndex = 0;  // trigger the initial rebuild
 
             // Click on the image thumbnail on the right panel
             var imageThumbClickRecognizer = new PointerGestureRecognizer();
             imageThumbClickRecognizer.PointerReleased += (sender, @event) => ClickOnImageThumb(sender!);
             this.ImageThumb.GestureRecognizers.Add(imageThumbClickRecognizer);
-            //this.ImageThumb.
 
             // Click on the save button on the right panel
             //var saveButtonClickRecognizer = new PointerGestureRecognizer();
             //saveButtonClickRecognizer.PointerReleased += (sender, @event) => ClickOnSaveChangesButton(sender!);
             //this.ButtonSaveChanges.GestureRecognizers.Add(saveButtonClickRecognizer);
             this.ButtonSaveChanges.Clicked += ClickOnSaveChangesButton;
+        }
+
+        private void PickerEbookStores_RebuildBookListAndFlexLayout(object? sender, EventArgs e)
+        {
+            myViewModel.SetupBookList((string)PickerEbookStores.SelectedItem);
+
+            // Workaround
+            // Flexlayout cannot be bound to a data source in xaml
+            // https://github.com/dotnet/maui/issues/7747
+            ImageFlexLayout.Clear();
+            foreach (var book in myViewModel.BookList)
+            {
+                var image = CreateImageFromBookModel(book);
+                ImageFlexLayout.Children.Add(image);
+            }
         }
 
         private Image CreateImageFromBookModel(BookModel book)
@@ -165,7 +175,7 @@ namespace Gui
 
         private void DisplayVersion()
         {
-            Version version = Assembly.GetEntryAssembly()?.GetName().Version;
+            Version? version = Assembly.GetEntryAssembly()?.GetName().Version;
             if (version != null)
             {
                 string versionString = $"Version: {version.Major}.{version.Minor}.{version.Build}";

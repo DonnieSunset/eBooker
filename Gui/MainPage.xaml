@@ -9,17 +9,23 @@
         <vm:MainViewModel>
         </vm:MainViewModel>
     </ContentPage.BindingContext>
-    
 
     <Grid
         ColumnDefinitions="300,*,400"
-        RowDefinitions="*,20"
+        RowDefinitions="50,*,20"
         RowSpacing="10" 
         ColumnSpacing="10">
-            
+
+        <!-- Middle Column: Selection Box -->
+        <Picker Grid.Column="1"
+                Grid.Row="0"
+            x:Name="PickerEbookStores" WidthRequest="1000" HorizontalTextAlignment="Center" HeightRequest="40">
+        </Picker>
+
         <!-- Middle Column: The Book Covers -->
-        
+
         <ScrollView Grid.Column="1"
+                    Grid.Row="1"
                     Grid.RowSpan="2"
                     Background="WhiteSmoke"
                     >
@@ -27,18 +33,15 @@
             <FlexLayout Grid.Column="1"
                         x:Name="ImageFlexLayout"
                         Wrap="Wrap"
-                        JustifyContent="SpaceAround"
-                        
-                        >
+                        JustifyContent="SpaceAround">
             </FlexLayout>
-    
+
         </ScrollView>
 
         <!-- Right Column: The Book Metadata -->
 
-        <VerticalStackLayout 
-            Grid.Column="2"
-            Grid.Row="0">
+        <VerticalStackLayout Grid.Column="2"
+                             Grid.Row="1">
             <Image x:Name="ImageThumb" WidthRequest="200" HeightRequest="300"/>
 
             <Frame BorderColor="White" HeightRequest="20"/>
@@ -75,10 +78,9 @@
 
         <Label
             Grid.Column="2"
-            Grid.Row="1"
+            Grid.Row="2"
             x:Name="LabelVersion" FontSize="10" HorizontalTextAlignment="End" Padding="5"
             />
     </Grid>
-
 
 </ContentPage>
