@@ -1,7 +1,7 @@
 ﻿using Gui.ViewModels;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
 using System.Reflection;
-using static Gui.ViewModels.MainViewModel;
 
 namespace Gui
 {
@@ -36,7 +36,7 @@ namespace Gui
             myViewModel = (MainViewModel)this.BindingContext;
 
             PickerEbookStores.ItemsSource = stores.EBookStores;
-            PickerEbookStores.SelectedIndexChanged += PickerEbookStores_RebuildBookListAndFlexLayout;
+            PickerEbookStores.SelectedIndexChanged += async (object? sender, EventArgs e) => { await PickerEbookStores_RebuildBookListAndFlexLayoutAsync(sender, e); };
             PickerEbookStores.SelectedIndex = 0;  // trigger the initial rebuild
 
             // Click on the image thumbnail on the right panel
@@ -51,19 +51,36 @@ namespace Gui
             this.ButtonSaveChanges.Clicked += ClickOnSaveChangesButton;
         }
 
-        private void PickerEbookStores_RebuildBookListAndFlexLayout(object? sender, EventArgs e)
+        private async Task PickerEbookStores_RebuildBookListAndFlexLayoutAsync(object? sender, EventArgs e)
         {
-            myViewModel.SetupBookList((string)PickerEbookStores.SelectedItem);
+            PickerEbookStores.IsEnabled = false;
+            var sw = new Stopwatch();
+            sw.Start();
 
             // Workaround
             // Flexlayout cannot be bound to a data source in xaml
             // https://github.com/dotnet/maui/issues/7747
+
+            myViewModel.StoreLocation = PickerEbookStores.SelectedItem as string;
             ImageFlexLayout.Clear();
-            foreach (var book in myViewModel.BookList)
+            myViewModel.ResetBookList();
+
+            double act = 0d;
+            foreach (var epubFile in myViewModel.EpubFileList)
             {
-                var image = CreateImageFromBookModel(book);
-                ImageFlexLayout.Children.Add(image);
+                Image image = null;
+                await Task.Run(() =>
+                {
+                    var bookModel = myViewModel.AddBookModelFrom(epubFile);
+                    image = CreateImageFromBookModel(bookModel);
+                });
+                ImageFlexLayout.Add(image);
+                ProgressBar.Progress = act++ / myViewModel.EpubFileList.Count;
+                ProgressBarLabel.Text = $"{(int)(ProgressBar.Progress*100)}% ({act} of {myViewModel.EpubFileList.Count} ebooks loaded)";
             }
+
+            ProgressBarLabel.Text = $"Loading of {myViewModel.EpubFileList.Count} ebooks took {sw.Elapsed.TotalSeconds} sec.";
+            PickerEbookStores.IsEnabled = true;
         }
 
         private Image CreateImageFromBookModel(BookModel book)

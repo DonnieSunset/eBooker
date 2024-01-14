@@ -74,6 +74,9 @@
 
             <Label Text="{Binding ImageChangedDebugText, Mode=TwoWay}" FontSize="12" VerticalTextAlignment="Start"/>
 
+            <Label x:Name="ProgressBarLabel" FontSize="16" VerticalTextAlignment="Start" HeightRequest="20"/>
+            <ProgressBar x:Name="ProgressBar" ProgressColor="Red" Progress="0" HeightRequest="20" />
+
         </VerticalStackLayout>
 
         <Label
