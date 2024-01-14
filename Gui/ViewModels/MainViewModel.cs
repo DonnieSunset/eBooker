@@ -68,24 +68,6 @@ namespace Gui.ViewModels
             return book;
         }
 
-        public IEnumerable<BookModel> ReloadBookList()
-        {
-            if (!Directory.Exists(StoreLocation))
-            {
-                throw new Exception($"Directory for ebook story <{StoreLocation}> does not exist.");
-            }
-
-            EpubFileList = null;
-            BookList.Clear();
-
-            foreach (var fileLoctaion in EpubFileList)
-            {
-                var book = new BookModel(fileLoctaion);
-                BookList.Add(book);
-                yield return book;
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName = null)
