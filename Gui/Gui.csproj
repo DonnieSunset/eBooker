@@ -82,6 +82,14 @@
 		<VersionPrefix>0.1.0</VersionPrefix>
 		<AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>
+		<DefaultLanguage>en</DefaultLanguage>
+		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+		<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+		<GenerateTestArtifacts>True</GenerateTestArtifacts>
+		<HoursBetweenUpdateChecks>24</HoursBetweenUpdateChecks>
 	</PropertyGroup>
 
 </Project>

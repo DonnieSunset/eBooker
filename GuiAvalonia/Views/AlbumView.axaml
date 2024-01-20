@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="GuiAvalonia.Views.AlbumView"
+			 xmlns:vm="using:GuiAvalonia.ViewModels"
+			 x:DataType="vm:AlbumViewModel"
+	>
+	<StackPanel Spacing="0" Width="250" Height ="350">
+     
+        <Border
+            BorderThickness="0"
+            BoxShadow="15 15 20 0 DarkGray"
+            Padding="0" 
+			Margin="25">
+        <Image  Width="200" Height ="300" Stretch="UniformToFill" Source="{Binding Cover}"/>
+      </Border>
+    
+    </StackPanel>
+
+</UserControl>
