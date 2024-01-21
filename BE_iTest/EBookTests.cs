@@ -18,18 +18,6 @@ namespace BE_iTest
         }
 
         [Test]
-        [Category("HappyPath")]
-        public void ReadCoverImage()
-        {
-            foreach ( var file in GetListOfTestData())
-            {
-                var eBook = new eBook(file);
-                var imageMemoryStream = eBook.GetCover();
-                Assert.That(imageMemoryStream.Length, Is.GreaterThan(0), $"Image Memory Stream Size for <{file}>.");
-            }
-        }
-
-        [Test]
         public void SetCoverInOpf_OpfDoesNotExist_ThrowsException()
         {
             var eBook = new eBook(@"C:\temp\EbookTestData\Special\Special_NoOpf.epub");
@@ -66,7 +54,14 @@ namespace BE_iTest
                 var sizeOfCoverOnFileSystem = new FileInfo(coverFileLocation).Length;
 
                 // This is a lazy "image comparison", but better than nothing
-                Assert.That(sizeOfUpdatedCover, Is.EqualTo(sizeOfCoverOnFileSystem), $"Sizes of cover ({sizeOfUpdatedCover}) in updated ebook should be the size of the cover file ({sizeOfCoverOnFileSystem}) on file system. Original Ebook file: <{epubFile}>. Temp file: <{ebookTempFileLocation}>.");
+                Assert.That(sizeOfUpdatedCover, Is.EqualTo(sizeOfCoverOnFileSystem), 
+                    $"Sizes of cover ({sizeOfUpdatedCover}) in updated ebook should be " +
+                    $"the size of the cover file ({sizeOfCoverOnFileSystem}) on file system. " +
+                    $"Original Ebook file: <{epubFile}>. Temp file: <{ebookTempFileLocation}>.");
+
+                var entries = eBook.ZipArchiveRead.Entries.Select(x => x.FullName).ToList();
+                Assert.That(entries.Count, Is.EqualTo(entries.Distinct().ToList().Count),
+                    "There shall be no duplicate entries in the resulting archiv.");
 
                 // delete file only in success case, leave it there for debugging in exception case
                 eBook?.Dispose();

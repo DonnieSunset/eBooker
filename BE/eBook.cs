@@ -10,7 +10,7 @@ namespace BE
         private ZipArchive myZipArchive = null;
         private Cover myCover = new Cover();
 
-        private ZipArchive ZipArchiveRead 
+        internal ZipArchive ZipArchiveRead 
         {
             get
             { 
@@ -23,7 +23,7 @@ namespace BE
             }
         }
 
-        private ZipArchive ZipArchiveUpdate
+        internal ZipArchive ZipArchiveUpdate
         {
             get
             {
@@ -41,32 +41,18 @@ namespace BE
             }
         }
 
-        private ZipArchiveEntry myOpfEntry = null;
-        private string myOpfRelativePath = null;
+        private ZipArchiveEntry? myOpfEntry = null;
+        private string? myOpfRelativePath = null;
         public ZipArchiveEntry OpfEntryRead
         { 
             get
             {
                 if (myOpfEntry == null)
                 {
-                    try
-                    {
-                        // todo: remove duplicate code
-                        myOpfEntry = ZipArchiveRead.Entries?.SingleOrDefault(
-                           x => x.Name.EndsWith(".opf", StringComparison.CurrentCultureIgnoreCase));
-                        myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
-
-                        if (myOpfEntry == null)
-                        {
-                            throw new EbookerException($"Could not find opf file in ebook <{myFileLocation}>.");
-                        }
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        throw new EbookerException($"Seems there are multiple opf file in ebook <{myFileLocation}>. See inner exception for more details.", ex);
-                    }
+                    myOpfEntry = ReloadOpfFromArchive(ZipArchiveRead);
+                    myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
                 }
-
+                
                 return myOpfEntry;
             }
         }
@@ -77,22 +63,8 @@ namespace BE
             {
                 if (myOpfEntry == null || myZipArchive.Mode != ZipArchiveMode.Update)
                 {
-                    try
-                    {
-                        // todo: remove duplicate code
-                        myOpfEntry = ZipArchiveUpdate.Entries?.SingleOrDefault(
-                           x => x.Name.EndsWith(".opf", StringComparison.CurrentCultureIgnoreCase));
-                        myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
-
-                        if (myOpfEntry == null)
-                        {
-                            throw new EbookerException($"Could not find opf file in ebook <{myFileLocation}>.");
-                        }
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        throw new EbookerException($"Seems there are multiple opf file in ebook <{myFileLocation}>. See inner exception for more details.", ex);
-                    }
+                    myOpfEntry = ReloadOpfFromArchive(ZipArchiveUpdate);
+                    myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
                 }
 
                 return myOpfEntry;
@@ -249,6 +221,26 @@ namespace BE
             reducedPath = reducedPath.TrimEnd('/');
 
             return reducedPath;
+        }
+
+        private ZipArchiveEntry ReloadOpfFromArchive(ZipArchive zipArchive)
+        {
+            try
+            {
+                myOpfEntry = zipArchive.Entries?.SingleOrDefault(
+                   x => x.Name.EndsWith(".opf", StringComparison.CurrentCultureIgnoreCase));
+
+                if (myOpfEntry == null)
+                {
+                    throw new EbookerException($"Could not find opf file in ebook <{myFileLocation}>.");
+                }
+
+                return myOpfEntry;
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new EbookerException($"Seems there are multiple opf file in ebook <{myFileLocation}>. See inner exception for more details.", ex);
+            }
         }
     }
 }
