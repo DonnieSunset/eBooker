@@ -17,22 +17,11 @@ namespace BE_iTest
         {
         }
 
-        //[TestCase("<center><img src=\"Image00008.jpg\" style=\"width:100%;height:100%;\"/>", "Image00008.jpg")]
-        //public void GetImageSourceFromHtmlTest(string htmlString, string expectedMatch)
-        //{
-        //    var reader = new Cover();
-        //    var result = reader.GetImageSourceFromHtml(htmlString);
-
-        //    Assert.That(result, Is.EqualTo(expectedMatch));
-        //}
-
         [Test]
+        [Category("HappyPath")]
         public void ReadCoverImage()
         {
-            var files = GetListOfTestData();
-            Assert.That(files.Count, Is.EqualTo(638));
-
-            foreach ( var file in files )
+            foreach ( var file in GetListOfTestData())
             {
                 var eBook = new eBook(file);
                 var imageMemoryStream = eBook.GetCover();
@@ -56,32 +45,44 @@ namespace BE_iTest
             Assert.That(() => eBook.UpdateCover(coverFileLocation), Throws.InstanceOf<EbookerException>());
         }
 
+        // add test for remove cover
+
         [Test]
+        [Category("HappyPath")]
         public void UpdateCover_CoverEntryAndCoverFileAlreadyExist_CoverEntryAndFileAreOverwritten()
         {
-            var ebookTempFileLocation = CreateLocalCopy(@"C:\temp\EbookTestData\Special\Special_StandardOpfCoverJpeg.epub");
-            eBook eBook = null;
-
-            try
+            foreach (var epubFile in GetListOfTestData())
             {
-                eBook = new eBook(ebookTempFileLocation);
+                var ebookTempFileLocation = CreateLocalCopy(epubFile);
+
+                var eBook = new eBook(ebookTempFileLocation);
                 eBook.UpdateCover(coverFileLocation);
                 eBook.Dispose();
 
                 eBook = new eBook(ebookTempFileLocation);
                 var newCover = eBook.GetCoverArchiveEntry();
-                
+
                 var sizeOfUpdatedCover = newCover.Length;
                 var sizeOfCoverOnFileSystem = new FileInfo(coverFileLocation).Length;
 
                 // This is a lazy "image comparison", but better than nothing
-                Assert.That(sizeOfUpdatedCover, Is.EqualTo(sizeOfCoverOnFileSystem), $"Sizes of cover in updated ebook ({sizeOfUpdatedCover}) should be the size of the cover file on file system ({sizeOfCoverOnFileSystem}).");
-            }
-            finally
-            {
-                eBook.Dispose();
+                Assert.That(sizeOfUpdatedCover, Is.EqualTo(sizeOfCoverOnFileSystem), $"Sizes of cover ({sizeOfUpdatedCover}) in updated ebook should be the size of the cover file ({sizeOfCoverOnFileSystem}) on file system. Original Ebook file: <{epubFile}>. Temp file: <{ebookTempFileLocation}>.");
+
+                // delete file only in success case, leave it there for debugging in exception case
+                eBook?.Dispose();
                 File.Delete(ebookTempFileLocation);
             }
+        }
+
+        [TestCase("one/two/three", "one/two/three")]
+        [TestCase("one\\two\\three\\", "one/two/three")]
+        [TestCase("one/two/..", "one")]
+        [TestCase("one/../three", "three")]
+        [TestCase("OEBPS/images/../cover.jpeg", "OEBPS/cover.jpeg")]
+        public void ResolveDirectoryJumps_SomeVariations_ContainsNoDirectoryJumps(string actualPath, string expectedPath)
+        {
+            var ebook = new eBook("");
+            Assert.That(ebook.ResolveDirectoryJumps(actualPath), Is.EqualTo(expectedPath));
         }
 
         private List<string> GetListOfTestData()
@@ -91,6 +92,8 @@ namespace BE_iTest
             {
                 list.Add(fileLoction);
             }
+            
+            Assert.That(list.Count, Is.EqualTo(638));
             return list;
         }
 
