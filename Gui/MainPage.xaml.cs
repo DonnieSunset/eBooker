@@ -43,7 +43,7 @@ namespace Gui
             var imageThumbClickRecognizer = new PointerGestureRecognizer();
             imageThumbClickRecognizer.PointerReleased += (sender, @event) => ClickOnImageThumb(sender!);
             this.ImageThumb.GestureRecognizers.Add(imageThumbClickRecognizer);
-
+            
             // Click on the save button on the right panel
             //var saveButtonClickRecognizer = new PointerGestureRecognizer();
             //saveButtonClickRecognizer.PointerReleased += (sender, @event) => ClickOnSaveChangesButton(sender!);
@@ -122,7 +122,11 @@ namespace Gui
             var parentImage = (Image)sender;
             var book = (BookModel)parentImage.BindingContext;
 
-            ImageThumb.Source = book.ConvertFromMemoryStream(book.ImageMemoryStream);
+            ImageThumb.Source = book.ImageMemoryStream?.Length == 0
+                // at the time of implementation, this worked only with png format
+                // and only with embedded resource as build action (not MauiImage)
+                ? ImageSource.FromResource("Gui.Resources.Images.no_cover.png", Assembly.GetCallingAssembly())
+                : book.ConvertFromMemoryStream(book.ImageMemoryStream);
             ImageThumb.BindingContext = book;
 
             ButtonSaveChanges.BindingContext = book;
