@@ -9,7 +9,7 @@ namespace BE_iTest
 {
     public class EBookTests
     {
-        string testDataFolder = @"C:\temp\EbookTestData";
+        string testDataFolder = @"C:\temp\EbookTestData\Regular";
         string coverFileLocation = @"C:\temp\EbookTestData\Special\IMG_20170605_133025.jpg";
 
         [SetUp]

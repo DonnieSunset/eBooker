@@ -46,6 +46,24 @@ namespace BE
             return coverEntries.Select(x => x.Attribute("href").Value).ToList();
         }
 
+        public static void AddCoverEntry(XDocument opfDocument, string coverHref)
+        {
+            var xmlRoot = opfDocument.Root;
+
+            var xmlMetaData = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "metadata");
+            xmlMetaData.Add(new XElement(xmlMetaData.GetDefaultNamespace() + "meta",
+                new XAttribute("name", "cover"),
+                new XAttribute("content", "coverID")
+                ));
+
+            var xmlManifest = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
+            xmlManifest.Add(new XElement(xmlManifest.GetDefaultNamespace() + "item",
+                new XAttribute("href", coverHref),
+                new XAttribute("id", "coverID"),
+                new XAttribute("media-type", "image/jpeg")
+                ));
+        }
+
         private static IEnumerable<XElement?> IdentifyCoverMetaEntries(XDocument opfDocument)
         {
             var xmlRoot = opfDocument.Root;
@@ -72,24 +90,6 @@ namespace BE
                 );
 
             return coverEntries;
-        }
-
-        public static void AddCoverEntry(XDocument opfDocument, string coverHref)
-        {
-            var xmlRoot = opfDocument.Root;
-
-            var xmlMetaData = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "metadata");
-            xmlMetaData.Add(new XElement(xmlMetaData.GetDefaultNamespace() + "meta",
-                new XAttribute("name", "cover"),
-                new XAttribute("content", "coverID")
-                ));
-
-            var xmlManifest = xmlRoot?.Elements().SingleOrDefault(x => x.Name.LocalName == "manifest");
-            xmlManifest.Add(new XElement(xmlManifest.GetDefaultNamespace() + "item",
-                new XAttribute("href", coverHref),
-                new XAttribute("id", "coverID"),
-                new XAttribute("media-type", "image/jpeg")
-                ));
         }
     }
 }

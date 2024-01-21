@@ -43,13 +43,34 @@ namespace BE
 
         public MemoryStream GetCover()
         {
-            return myCover.GetImage(ZipArchiveRead);
+            return myCover.GetImage(GetCoverArchiveEntry());
         }
 
-        public ZipArchiveEntry GetCoverArchiveEntry()
+        public ZipArchiveEntry? GetCoverArchiveEntry()
         {
-            //todo: replce this with OpfModifier
-            return myCover.GetCoverFileByOpf(ZipArchiveRead);
+            var opfFile = GetOpf();
+            using (var opfStream = opfFile.Open())
+            {
+                XDocument opfXmlDoc = XDocument.Load(opfStream);
+                List<string> opfMetaEntries = OpfModifier.GetCoverMetaEntries(opfXmlDoc);
+                List<string> opfManifestEntries = OpfModifier.GetCoverManifestEntries(opfXmlDoc, opfMetaEntries);
+
+                if (opfManifestEntries == null || opfManifestEntries.Count == 0)
+                {
+                    return null;
+                }
+                else if (opfManifestEntries.Count > 1)
+                {
+                    throw new EbookerException($"Could not identify unique cover entry for ebook <{myFileLocation}>. " +
+                        $"Candidates are: {Environment.NewLine} {String.Join(Environment.NewLine, opfManifestEntries)}");
+                }
+                else
+                {
+                    string coverLink = opfManifestEntries.Single();
+                    return ZipArchiveRead.Entries.FirstOrDefault(
+                        x => x.FullName.EndsWith(coverLink, StringComparison.CurrentCultureIgnoreCase));
+                }
+            }
         }
 
         public void GetMetaInformation()
@@ -134,7 +155,7 @@ namespace BE
         // The returned object has a property "FullName" which contains the relative path
         // of the file, e.g. OEPBS/content.opf
         // and "Name", which would then be "content.opf".
-        internal ZipArchiveEntry GetOpf(bool writable=false)
+        private ZipArchiveEntry GetOpf(bool writable=false)
         {
             ZipArchive archive;
             ZipArchiveEntry? opfFile;
