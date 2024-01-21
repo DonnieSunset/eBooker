@@ -1,10 +1,11 @@
 # Changelog
 
-## [Unreleased]
+## 0.2.0 2024-01-21
 
 ### Added
-- Ebook Store configurable by appsettings.json
-- Ebook Store configuration for Debug and Release
+- Ebook Store configurable by appsettings.json.
+- Ebook Store configuration for Debug and Release.
+- Cover files can be changed now.
 
 ### Changed
 
