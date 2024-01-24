@@ -72,7 +72,7 @@ namespace BE
             var coverEntries = xmlMetaData?.Elements().Where(x =>
                 x.Name.LocalName == "meta" &&
                 x.Attribute("name") != null &&
-                x.Attribute("name").Value.Equals("cover", StringComparison.InvariantCultureIgnoreCase)
+                x.Attribute("name")!.Value.Equals("cover", StringComparison.OrdinalIgnoreCase)
                 );
 
             return coverEntries;
@@ -86,7 +86,7 @@ namespace BE
             var coverEntries = xmlMetaData?.Elements().Where(x =>
                 x.Name.LocalName == "item" &&
                 x.Attribute("id") != null &&
-                iDs.Contains(x.Attribute("id").Value)
+                iDs.Contains(x.Attribute("id")!.Value)
                 );
 
             return coverEntries;

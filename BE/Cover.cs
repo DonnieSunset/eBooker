@@ -30,7 +30,7 @@ namespace BE
             }
         }
 
-        public static MemoryStream GetMemoryStreamFromFile(string fileLocation)
+        public static MemoryStream? GetMemoryStreamFromFile(string fileLocation)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace BE
 
                 return new MemoryStream(byteArray);
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
