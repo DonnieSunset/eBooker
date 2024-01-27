@@ -69,6 +69,47 @@ namespace BE_iTest
             }
         }
 
+        [Test]
+        public void ReadAndWriteMetaData_MetaDataMissing()
+        {
+            var epubFile = @"C:\temp\EbookTestData\Special\Special_NoMetaData.epub";
+            var ebookTempFileLocation = CreateLocalCopy(epubFile);
+
+            var eBook = new eBook(ebookTempFileLocation);
+            eBook.ReadMetaData();
+            Assert.That(eBook.MetaData.Author, Is.Null);
+
+            string newAuthor = "McQuillington, Chuckle ";
+            eBook.UpdateMetaInformation(newAuthor);
+            eBook.Dispose();
+
+            eBook = new eBook(ebookTempFileLocation);
+            eBook.ReadMetaData();
+            Assert.That(eBook.MetaData.Author, Is.EqualTo(newAuthor));
+        }
+
+        [Test]
+        public void ReadAndWriteMetaData_MetaDataExisting()
+        {
+            int count = 0;
+            foreach (var epubFile in GetListOfTestData())
+            {
+                var ebookTempFileLocation = CreateLocalCopy(epubFile);
+
+                var eBook = new eBook(ebookTempFileLocation);
+                eBook.ReadMetaData();
+
+                string newAuthor = "McQuillington, Chuckle";
+                eBook.UpdateMetaInformation(newAuthor);
+                eBook.Dispose();
+
+                eBook = new eBook(ebookTempFileLocation);
+                eBook.ReadMetaData();
+                Assert.That(eBook.MetaData.Author, Is.EqualTo(newAuthor));
+            }
+            Console.WriteLine("SH: " + count);
+        }
+
         [TestCase("one/two/three", "one/two/three")]
         [TestCase("one\\two\\three\\", "one/two/three")]
         [TestCase("one/two/..", "one")]

@@ -10,6 +10,13 @@ namespace BE
         private ZipArchive myZipArchive = null;
         private Cover myCover = new Cover();
 
+        public record MetaDataRecord
+        {
+            public string? Author { get; set; } = null;
+        }
+
+        public MetaDataRecord MetaData { get; set; } = new MetaDataRecord();           
+
         internal ZipArchive ZipArchiveRead 
         {
             get
@@ -105,17 +112,6 @@ namespace BE
             }
         }
 
-        public void GetMetaInformation()
-        { 
-            throw new NotImplementedException();
-        }
-
-        public void UpdateMetaInformation()
-        {
-            throw new NotImplementedException();
-        }
-
-
         public void UpdateCover(string coverFileLocation)
         {
             using (var opfStream = OpfEntryUpdate.Open())
@@ -140,6 +136,32 @@ namespace BE
                 TryRemoveCoverFilesFromArchive(string.Empty, [coverLocationInsideArchive]);    
                 
                 WriteCoverFileToArchive(coverFileLocation, coverLocationInsideArchive);
+            }
+
+            //Important, otherwise it will not get saved
+            ZipArchiveUpdate.Dispose();
+            this.Dispose();
+        }
+
+        public void ReadMetaData()
+        {
+            this.MetaData = new eBook.MetaDataRecord();
+
+            using (var opfStream = OpfEntryRead.Open())
+            {
+                XDocument xmlDoc = XDocument.Load(opfStream);
+
+                this.MetaData.Author = OpfModifier.GetAuthor(xmlDoc);
+            }
+        }
+
+        public void UpdateMetaInformation(string author)
+        {
+            using (var opfStream = OpfEntryUpdate.Open())
+            {
+                XDocument xmlDoc = XDocument.Load(opfStream);
+                OpfModifier.SetAuthor(xmlDoc, author);
+                UpdateOpfInArchive(opfStream , xmlDoc);
             }
 
             //Important, otherwise it will not get saved
