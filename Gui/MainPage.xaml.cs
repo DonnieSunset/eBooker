@@ -136,6 +136,8 @@ namespace Gui
             ButtonSaveChanges.IsEnabled = false;
             myViewModel.ImageChanged = false;
             myViewModel.ImageChangedFileLocation = string.Empty;
+
+            EntryAuthors.Text = book.GetAuthor();
         }
 
         private async void ClickOnImageThumb(object sender)

@@ -52,5 +52,10 @@ namespace Gui.ViewModels
         {
             eBook.UpdateCover(coverFileLocation);
         }
+
+        public string GetAuthor()
+        {
+            return String.Join(" / ", eBook.MetaData.Authors);
+        }
     }
 }

@@ -15,7 +15,19 @@ namespace BE
             public List<string> Authors { get; set; } = new();
         }
 
-        public MetaDataRecord MetaData { get; set; } = new MetaDataRecord();           
+        private MetaDataRecord? myMetaData = null;           
+
+        public MetaDataRecord MetaData 
+        {
+            get
+            { 
+                if (myMetaData == null)
+                {
+                    this.ReadMetaData();
+                }
+                return myMetaData!;
+            }
+        }
 
         internal ZipArchive ZipArchiveRead 
         {
@@ -143,15 +155,15 @@ namespace BE
             this.Dispose();
         }
 
-        public void ReadMetaData()
+        private void ReadMetaData()
         {
-            this.MetaData = new MetaDataRecord();
+            this.myMetaData = new MetaDataRecord();
 
             using (var opfStream = OpfEntryRead.Open())
             {
                 XDocument xmlDoc = XDocument.Load(opfStream);
 
-                this.MetaData.Authors = OpfModifier.GetAuthors(xmlDoc);
+                this.myMetaData.Authors = OpfModifier.GetAuthors(xmlDoc);
             }
         }
 
