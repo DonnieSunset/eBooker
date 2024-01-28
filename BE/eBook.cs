@@ -12,7 +12,7 @@ namespace BE
 
         public record MetaDataRecord
         {
-            public string? Author { get; set; } = null;
+            public List<string> Authors { get; set; } = new();
         }
 
         public MetaDataRecord MetaData { get; set; } = new MetaDataRecord();           
@@ -145,13 +145,13 @@ namespace BE
 
         public void ReadMetaData()
         {
-            this.MetaData = new eBook.MetaDataRecord();
+            this.MetaData = new MetaDataRecord();
 
             using (var opfStream = OpfEntryRead.Open())
             {
                 XDocument xmlDoc = XDocument.Load(opfStream);
 
-                this.MetaData.Author = OpfModifier.GetAuthor(xmlDoc);
+                this.MetaData.Authors = OpfModifier.GetAuthors(xmlDoc);
             }
         }
 

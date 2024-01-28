@@ -77,7 +77,7 @@ namespace BE_iTest
 
             var eBook = new eBook(ebookTempFileLocation);
             eBook.ReadMetaData();
-            Assert.That(eBook.MetaData.Author, Is.Null);
+            Assert.That(eBook.MetaData.Authors.Count, Is.EqualTo(0));
 
             string newAuthor = "McQuillington, Chuckle ";
             eBook.UpdateMetaInformation(newAuthor);
@@ -85,13 +85,12 @@ namespace BE_iTest
 
             eBook = new eBook(ebookTempFileLocation);
             eBook.ReadMetaData();
-            Assert.That(eBook.MetaData.Author, Is.EqualTo(newAuthor));
+            Assert.That(eBook.MetaData.Authors, Has.Exactly(1).EqualTo(newAuthor));
         }
 
         [Test]
         public void ReadAndWriteMetaData_MetaDataExisting()
         {
-            int count = 0;
             foreach (var epubFile in GetListOfTestData())
             {
                 var ebookTempFileLocation = CreateLocalCopy(epubFile);
@@ -105,9 +104,8 @@ namespace BE_iTest
 
                 eBook = new eBook(ebookTempFileLocation);
                 eBook.ReadMetaData();
-                Assert.That(eBook.MetaData.Author, Is.EqualTo(newAuthor));
+                Assert.That(eBook.MetaData.Authors, Has.Exactly(1).EqualTo(newAuthor));
             }
-            Console.WriteLine("SH: " + count);
         }
 
         [TestCase("one/two/three", "one/two/three")]
