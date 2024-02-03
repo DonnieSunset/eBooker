@@ -73,14 +73,14 @@ namespace BE
         }
 
         /// <summary>
-        /// Set the author in the meta data section of a opf file
+        /// Set the author in the meta data section of a opf file.
         /// </summary>
         /// <exception cref="EbookerException">Thrown if more than one author entry is already existing.</exception>
         /// <remarks>
         /// Format of the author entry:
         /// <dc:creator opf:role="aut" opf:file-as="Kristof, Agota">Kristof, Agota</dc:creator>
         /// </remarks>
-        public static void SetAuthor(XDocument opfDocument, string author)
+        public static void SetAuthors(XDocument opfDocument, Author? author1, Author? author2)
         {
             var (xmlMetaData, opfNamespace, dcNamespace) = GetMetaDataSection(opfDocument);
 
@@ -89,12 +89,27 @@ namespace BE
                 existingEntry.Remove();
             }
 
-            var newElement = new XElement(dcNamespace + "creator",
-                        new XAttribute(opfNamespace + "role", "aut"),
-                        new XAttribute(opfNamespace + "file-as", author),
-                        author);
+            foreach (Author author in new List<Author> { author1, author2} )
+            {
+                if (author != null)
+                {
+                    var newElement = new XElement(dcNamespace + "creator",
+                                new XAttribute(opfNamespace + "role", "aut"),
+                                new XAttribute(opfNamespace + "file-as", author.SortName),
+                                author.DisplayName);
 
-            xmlMetaData.Add(newElement);
+                    xmlMetaData.Add(newElement);
+                }
+            }
+        }
+
+        private static List<XElement> GetAuthorEntries(XElement xmlMetaData, XNamespace opfNamespace)
+        {
+            return xmlMetaData.Elements().Where(x =>
+                    x.Name.LocalName == "creator" &&
+                    x.Attribute(opfNamespace + "role") != null &&
+                    x.Attribute(opfNamespace + "role")!.Value.Equals("aut", StringComparison.OrdinalIgnoreCase)
+                ).ToList();
         }
 
         private static (XElement, XNamespace, XNamespace) GetMetaDataSection(XDocument opfDocument)
@@ -125,14 +140,6 @@ namespace BE
 
             return (xmlMetaData, opfNamespace, dcNamespace);
         }
-
-        private static IEnumerable<XElement> GetAuthorEntries(XElement xmlMetaData, XNamespace opfNamespace) 
-        {
-            return xmlMetaData.Elements().Where(x =>
-                    x.Name.LocalName == "creator" &&
-                    x.Attribute(opfNamespace + "role") != null &&
-                    x.Attribute(opfNamespace + "role")!.Value.Equals("aut", StringComparison.OrdinalIgnoreCase)
-                );        }
 
         private static IEnumerable<XElement?> IdentifyCoverMetaEntries(XDocument opfDocument)
         {

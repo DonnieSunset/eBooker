@@ -153,6 +153,26 @@ namespace BE
 
             //Important, otherwise it will not get saved
             ZipArchiveUpdate.Dispose();
+            Dispose();
+        }
+
+        public void UpdateAuthors(Author author1, Author author2)
+        {
+            using (var opfStream = OpfEntryUpdate.Open())
+            {
+                XDocument xmlDoc = XDocument.Load(opfStream);
+
+                if (author1 == null || String.IsNullOrEmpty(author1.DisplayName))
+                {
+                    throw new EbookerException($"{nameof(author1)} must be set to valid author.");
+                }
+
+                OpfModifier.SetAuthors(xmlDoc, author1, author2);
+                UpdateOpfInArchive(opfStream, xmlDoc);
+            }
+
+            //Important, otherwise it will not get saved
+            ZipArchiveUpdate.Dispose();
             this.Dispose();
         }
 
@@ -174,20 +194,6 @@ namespace BE
                     myMetaData.Author2 = new Author(authors[1]);
                 }
             }
-        }
-
-        public void UpdateMetaInformation(string author)
-        {
-            using (var opfStream = OpfEntryUpdate.Open())
-            {
-                XDocument xmlDoc = XDocument.Load(opfStream);
-                OpfModifier.SetAuthor(xmlDoc, author);
-                UpdateOpfInArchive(opfStream , xmlDoc);
-            }
-
-            //Important, otherwise it will not get saved
-            ZipArchiveUpdate.Dispose();
-            this.Dispose();
         }
 
         public void Dispose()
