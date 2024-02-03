@@ -149,6 +149,16 @@ namespace BE_iTest
             }
         }
 
+        [Test]
+        public void UpdateAuthors_NoAuthorSet_ThrowsException()
+        {
+            var epubFile = @"C:\temp\EbookTestData\Special\Special_StandardOpfCoverJpeg.epub";
+            var ebookTempFileLocation = CreateLocalCopy(epubFile);
+            var eBook = new eBook(ebookTempFileLocation);
+
+            Assert.That(() => eBook.UpdateAuthors(null, null), Throws.TypeOf<EbookerException>());
+        }
+
         [TestCase("one/two/three", "one/two/three")]
         [TestCase("one\\two\\three\\", "one/two/three")]
         [TestCase("one/two/..", "one")]
