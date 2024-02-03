@@ -1,12 +1,12 @@
 ﻿namespace BE
 {
-    public class Autor
+    public class Author
     {
         private string lastName;
 
         private string firstName;
 
-        public Autor(string transferredName)
+        public Author(string transferredName)
         {
             var tokens = transferredName.Split(",").ToList();
             if (tokens.Count == 1)

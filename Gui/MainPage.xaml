@@ -56,8 +56,10 @@
 
             <Frame BorderColor="White" HeightRequest="20"/>
 
-            <Label Text="Authors:" FontSize="12" VerticalTextAlignment="Start"/>
-            <Entry x:Name="EntryAuthors" FontSize="12" HeightRequest="12"/>
+            <Label Text="Author 1:" FontSize="12" VerticalTextAlignment="Start"/>
+            <Entry x:Name="EntryAuthor1" FontSize="12" HeightRequest="12"/>
+            <Label Text="Author 2:" FontSize="12" VerticalTextAlignment="Start"/>
+            <Entry x:Name="EntryAuthor2" FontSize="12" HeightRequest="12"/>
 
             <Frame BorderColor="White" HeightRequest="20"/>
 

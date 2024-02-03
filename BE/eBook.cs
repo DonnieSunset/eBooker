@@ -12,7 +12,8 @@ namespace BE
 
         public record MetaDataRecord
         {
-            public List<string> Authors { get; set; } = new();
+            public Author? Author1 { get; set; } = null;
+            public Author? Author2 { get; set; } = null;
         }
 
         private MetaDataRecord? myMetaData = null;           
@@ -157,13 +158,21 @@ namespace BE
 
         private void ReadMetaData()
         {
-            this.myMetaData = new MetaDataRecord();
+            myMetaData = new MetaDataRecord();
 
             using (var opfStream = OpfEntryRead.Open())
             {
                 XDocument xmlDoc = XDocument.Load(opfStream);
 
-                this.myMetaData.Authors = OpfModifier.GetAuthors(xmlDoc);
+                var authors = OpfModifier.GetAuthors(xmlDoc);
+                if (authors.Count > 0)
+                {
+                    myMetaData.Author1 = new Author(authors[0]);
+                }
+                if (authors.Count > 1) 
+                {
+                    myMetaData.Author2 = new Author(authors[1]);
+                }
             }
         }
 

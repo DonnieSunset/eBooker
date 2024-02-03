@@ -137,7 +137,8 @@ namespace Gui
             myViewModel.ImageChanged = false;
             myViewModel.ImageChangedFileLocation = string.Empty;
 
-            EntryAuthors.Text = book.GetAuthor();
+            EntryAuthor1.Text = book.GetAuthor1();
+            EntryAuthor2.Text = book.GetAuthor2();
         }
 
         private async void ClickOnImageThumb(object sender)
