@@ -53,6 +53,19 @@ namespace Gui.ViewModels
             eBook.UpdateCover(coverFileLocation);
         }
 
+        public void UpdateAuthors(string? author1, string? author2)
+        {
+            Author? authorObj1 = !String.IsNullOrEmpty(author1) ?
+                new Author(author1) :
+                null;
+
+            Author? authorObj2 = !String.IsNullOrEmpty(author2) ?
+                new Author(author2) :
+                null;
+
+            eBook.UpdateAuthors(authorObj1, authorObj2);
+        }
+
         public string GetAuthor1()
         {
             return (eBook.MetaData.Author1 != null)

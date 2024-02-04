@@ -97,7 +97,7 @@ namespace Gui
             };
 
             var clickRecognizer = new PointerGestureRecognizer();
-            clickRecognizer.PointerPressed += (sender, @event) => DisplayMetaInformation(sender!);
+            clickRecognizer.PointerPressed += (sender, @event) => UpdateRightPane(sender!);
             clickRecognizer.PointerEntered += (sender, @event) => ChangeToBlueShadow(sender!);
             clickRecognizer.PointerExited += (sender, @event) => ChangeToBlackShadow(sender!);
             image.GestureRecognizers.Add(clickRecognizer);
@@ -117,28 +117,50 @@ namespace Gui
             parentImage.Shadow = shadowBlue;
         }
 
-        private void DisplayMetaInformation(object sender)
+        private void UpdateRightPaneThumbnail(BookModel bookModel)
         {
-            var parentImage = (Image)sender;
-            var book = (BookModel)parentImage.BindingContext;
-
-            ImageThumb.Source = book.ImageMemoryStream?.Length == 0
+            ImageThumb.Source = bookModel.ImageMemoryStream?.Length == 0
                 // at the time of implementation, this worked only with png format
                 // and only with embedded resource as build action (not MauiImage)
                 ? ImageSource.FromResource("Gui.Resources.Images.no_cover.png", Assembly.GetCallingAssembly())
-                : book.ConvertFromMemoryStream(book.ImageMemoryStream);
-            ImageThumb.BindingContext = book;
+                : bookModel.ConvertFromMemoryStream(bookModel.ImageMemoryStream);
+            ImageThumb.BindingContext = bookModel;
 
-            ButtonSaveChanges.BindingContext = book;
+            ButtonSaveChanges.BindingContext = bookModel;
 
-            EntryLocation.Text = book.FileLocation;
+            EntryLocation.Text = bookModel.FileLocation;
 
             ButtonSaveChanges.IsEnabled = false;
+            myViewModel.AuthorsChanged = false;
             myViewModel.ImageChanged = false;
             myViewModel.ImageChangedFileLocation = string.Empty;
+        }
 
-            EntryAuthor1.Text = book.GetAuthor1();
-            EntryAuthor2.Text = book.GetAuthor2();
+        private void UpdateRightPaneMetaData(BookModel bookModel)
+        {
+            EntryAuthor1.TextChanged -= EntryAuthor_TextChanged;
+            EntryAuthor2.TextChanged -= EntryAuthor_TextChanged;
+
+            EntryAuthor1.Text = bookModel.GetAuthor1();
+            EntryAuthor2.Text = bookModel.GetAuthor2();
+
+            EntryAuthor1.TextChanged += EntryAuthor_TextChanged;
+            EntryAuthor2.TextChanged += EntryAuthor_TextChanged;
+        }
+
+        private void UpdateRightPane(object sender)
+        {
+            var parentImage = (Image)sender;
+            var bookModel = (BookModel)parentImage.BindingContext;
+
+            UpdateRightPaneThumbnail(bookModel);
+            UpdateRightPaneMetaData(bookModel);
+        }
+
+        private void EntryAuthor_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            myViewModel.AuthorsChanged = true;
+            ButtonSaveChanges.IsEnabled = true;
         }
 
         private async void ClickOnImageThumb(object sender)
@@ -162,6 +184,7 @@ namespace Gui
             }
             catch
             {
+                myViewModel.AuthorsChanged = false;
                 myViewModel.ImageChanged = false;
                 myViewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
@@ -173,24 +196,31 @@ namespace Gui
             try
             {
                 var saveChangesButton = (Button)sender;
-                var book = (BookModel)saveChangesButton.BindingContext;
+                var bookModel = (BookModel)saveChangesButton.BindingContext;
 
                 if (myViewModel.ImageChanged == true && !String.IsNullOrEmpty(myViewModel.ImageChangedFileLocation))
                 {
-                    book.UpdateCover(myViewModel.ImageChangedFileLocation);
+                    bookModel.UpdateCover(myViewModel.ImageChangedFileLocation);
                     
-                    var outdatedThumbnail = ImageFlexLayout.Children.Single(image => ((Image)image).BindingContext == book);
+                    var outdatedThumbnail = ImageFlexLayout.Children.Single(image => ((Image)image).BindingContext == bookModel);
                     var outdatedThumbnailIndex = ImageFlexLayout.Children.IndexOf(outdatedThumbnail);
                     
                     // we have to reset all image streams, so creating a new viewmodel is the cleanest way
-                    book = new BookModel(book.FileLocation); 
+                    bookModel = new BookModel(bookModel.FileLocation); 
                     
-                    var newThumbNail = CreateImageFromBookModel(book);
+                    var newThumbNail = CreateImageFromBookModel(bookModel);
                     ImageFlexLayout.Children[outdatedThumbnailIndex] = newThumbNail;
+                }
+
+                if (myViewModel.AuthorsChanged == true)
+                {
+                    bookModel.UpdateAuthors(EntryAuthor1.Text, EntryAuthor2.Text);
+                    UpdateRightPaneMetaData(bookModel);
                 }
             }
             finally
             {
+                myViewModel.AuthorsChanged = false;
                 myViewModel.ImageChanged = false;
                 myViewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
