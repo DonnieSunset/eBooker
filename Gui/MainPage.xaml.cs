@@ -201,13 +201,13 @@ namespace Gui
                 if (myViewModel.ImageChanged == true && !String.IsNullOrEmpty(myViewModel.ImageChangedFileLocation))
                 {
                     bookModel.UpdateCover(myViewModel.ImageChangedFileLocation);
-                    
+
                     var outdatedThumbnail = ImageFlexLayout.Children.Single(image => ((Image)image).BindingContext == bookModel);
                     var outdatedThumbnailIndex = ImageFlexLayout.Children.IndexOf(outdatedThumbnail);
-                    
+
                     // we have to reset all image streams, so creating a new viewmodel is the cleanest way
-                    bookModel = new BookModel(bookModel.FileLocation); 
-                    
+                    bookModel = new BookModel(bookModel.FileLocation);
+
                     var newThumbNail = CreateImageFromBookModel(bookModel);
                     ImageFlexLayout.Children[outdatedThumbnailIndex] = newThumbNail;
                 }
@@ -217,6 +217,10 @@ namespace Gui
                     bookModel.UpdateAuthors(EntryAuthor1.Text, EntryAuthor2.Text);
                     UpdateRightPaneMetaData(bookModel);
                 }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Exception happened!", ex.Message, "Got it!");
             }
             finally
             {
