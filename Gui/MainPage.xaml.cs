@@ -191,14 +191,12 @@ namespace Gui
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Exception happened!", ex.Message, "Got it!");
-            }
-            finally
-            {
                 myViewModel.AuthorsChanged = false;
                 myViewModel.ImageChanged = false;
                 myViewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
+
+                await DisplayAlert("Exception happened!", ex.Message, "Got it!");
             }
         }
 
