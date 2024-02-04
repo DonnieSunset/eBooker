@@ -187,19 +187,19 @@ namespace BE
         {
             using (var opfStream = OpfEntryRead.Open())
             {
-                myMetaData.Author1 = null;
-                myMetaData.Author2 = null;
+                MetaData.Author1 = null;
+                MetaData.Author2 = null;
 
                 XDocument xmlDoc = XDocument.Load(opfStream);
 
                 var authors = OpfModifier.GetAuthors(xmlDoc);
                 if (authors.Count > 0)
                 {
-                    myMetaData.Author1 = new Author(authors[0]);
+                    MetaData.Author1 = new Author(authors[0]);
                 }
                 if (authors.Count > 1)
                 {
-                    myMetaData.Author2 = new Author(authors[1]);
+                    MetaData.Author2 = new Author(authors[1]);
                 }
             }
         }
