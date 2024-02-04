@@ -41,7 +41,7 @@ namespace Gui
 
             // Click on the image thumbnail on the right panel
             var imageThumbClickRecognizer = new PointerGestureRecognizer();
-            imageThumbClickRecognizer.PointerReleased += (sender, @event) => ClickOnImageThumb(sender!);
+            imageThumbClickRecognizer.PointerReleased += (sender, @event) => ClickOnRightPaneImageThumb(sender!);
             this.ImageThumb.GestureRecognizers.Add(imageThumbClickRecognizer);
             
             // Click on the save button on the right panel
@@ -148,13 +148,20 @@ namespace Gui
             EntryAuthor2.TextChanged += EntryAuthor_TextChanged;
         }
 
-        private void UpdateRightPane(object sender)
+        private async void UpdateRightPane(object sender)
         {
             var parentImage = (Image)sender;
             var bookModel = (BookModel)parentImage.BindingContext;
 
-            UpdateRightPaneThumbnail(bookModel);
-            UpdateRightPaneMetaData(bookModel);
+            try
+            {
+                UpdateRightPaneThumbnail(bookModel);
+                UpdateRightPaneMetaData(bookModel);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Exception happened!", ex.Message, "Got it!");
+            }
         }
 
         private void EntryAuthor_TextChanged(object? sender, TextChangedEventArgs e)
@@ -163,7 +170,7 @@ namespace Gui
             ButtonSaveChanges.IsEnabled = true;
         }
 
-        private async void ClickOnImageThumb(object sender)
+        private async void ClickOnRightPaneImageThumb(object sender)
         {
             try
             {
@@ -182,7 +189,11 @@ namespace Gui
                     ButtonSaveChanges.IsEnabled = true;
                 }
             }
-            catch
+            catch (Exception ex)
+            {
+                await DisplayAlert("Exception happened!", ex.Message, "Got it!");
+            }
+            finally
             {
                 myViewModel.AuthorsChanged = false;
                 myViewModel.ImageChanged = false;
