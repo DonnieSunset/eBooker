@@ -53,7 +53,7 @@ namespace BE
                 }
                 else if (myZipArchive.Mode != ZipArchiveMode.Update)
                 { 
-                    myZipArchive.Dispose();
+                    Dispose();
                     myZipArchive = ZipFile.Open(myFileLocation, ZipArchiveMode.Update);
                 }
                 
@@ -81,7 +81,7 @@ namespace BE
         {
             get
             {
-                if (myOpfEntry == null || myZipArchive.Mode != ZipArchiveMode.Update)
+                if (myOpfEntry == null || myOpfEntry.Archive.Mode != ZipArchiveMode.Update)
                 {
                     myOpfEntry = ReloadOpfFromArchive(ZipArchiveUpdate);
                     myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
@@ -143,16 +143,15 @@ namespace BE
                 UpdateOpfInArchive(opfStream, xmlDoc);
 
                 RemoveCoverFilesFromArchive(relativePathOfOpfFile, existingCoverFiles);
-                
+
                 // sometimes the exact same cover file already exists even without being
                 // referenced in the opf metadata
-                TryRemoveCoverFilesFromArchive(string.Empty, [coverLocationInsideArchive]);    
-                
+                TryRemoveCoverFilesFromArchive(string.Empty, [coverLocationInsideArchive]);
+
                 WriteCoverFileToArchive(coverFileLocation, coverLocationInsideArchive);
             }
 
             //Important, otherwise it will not get saved
-            ZipArchiveUpdate.Dispose();
             Dispose();
         }
 
@@ -172,8 +171,7 @@ namespace BE
             }
 
             //Important, otherwise it will not get saved
-            ZipArchiveUpdate.Dispose();
-            this.Dispose();
+            Dispose();
         }
 
         private void ReadMetaData()
@@ -198,6 +196,7 @@ namespace BE
 
         public void Dispose()
         {
+            myOpfEntry = null;
             myZipArchive?.Dispose();
             myZipArchive = null;
         }
