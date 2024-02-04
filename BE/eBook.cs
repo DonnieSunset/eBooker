@@ -172,14 +172,24 @@ namespace BE
 
             //Important, otherwise it will not get saved
             Dispose();
+
+            ReadMetaDataAuthors();
         }
 
         private void ReadMetaData()
         {
             myMetaData = new MetaDataRecord();
 
+            ReadMetaDataAuthors();
+        }
+
+        private void ReadMetaDataAuthors()
+        {
             using (var opfStream = OpfEntryRead.Open())
             {
+                myMetaData.Author1 = null;
+                myMetaData.Author2 = null;
+
                 XDocument xmlDoc = XDocument.Load(opfStream);
 
                 var authors = OpfModifier.GetAuthors(xmlDoc);
@@ -187,7 +197,7 @@ namespace BE
                 {
                     myMetaData.Author1 = new Author(authors[0]);
                 }
-                if (authors.Count > 1) 
+                if (authors.Count > 1)
                 {
                     myMetaData.Author2 = new Author(authors[1]);
                 }
