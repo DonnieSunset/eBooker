@@ -1,4 +1,5 @@
 ﻿using BE;
+using BE.MetaData;
 
 namespace Gui.ViewModels
 {

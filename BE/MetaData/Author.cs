@@ -1,4 +1,4 @@
-﻿namespace BE
+﻿namespace BE.MetaData
 {
     public class Author
     {

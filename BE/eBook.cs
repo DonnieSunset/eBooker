@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Xml.Linq;
+using BE.MetaData;
 
 namespace BE
 {
@@ -157,18 +158,8 @@ namespace BE
 
         public void UpdateAuthors(Author author1, Author author2)
         {
-            using (var opfStream = OpfEntryUpdate.Open())
-            {
-                XDocument xmlDoc = XDocument.Load(opfStream);
-
-                if (author1 == null || String.IsNullOrEmpty(author1.DisplayName))
-                {
-                    throw new EbookerException($"{nameof(author1)} must be set to valid author.");
-                }
-
-                OpfModifier.SetAuthors(xmlDoc, author1, author2);
-                UpdateOpfInArchive(opfStream, xmlDoc);
-            }
+            Authors authors = new Authors();
+            authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?> ( author1, author2 ));
 
             //Important, otherwise it will not get saved
             Dispose();
@@ -185,23 +176,10 @@ namespace BE
 
         private void ReadMetaDataAuthors()
         {
-            using (var opfStream = OpfEntryRead.Open())
-            {
-                MetaData.Author1 = null;
-                MetaData.Author2 = null;
-
-                XDocument xmlDoc = XDocument.Load(opfStream);
-
-                var authors = OpfModifier.GetAuthors(xmlDoc);
-                if (authors.Count > 0)
-                {
-                    MetaData.Author1 = new Author(authors[0]);
-                }
-                if (authors.Count > 1)
-                {
-                    MetaData.Author2 = new Author(authors[1]);
-                }
-            }
+            Authors authors = new Authors();
+            var blubb = authors.Read(OpfEntryRead);
+            MetaData.Author1 = blubb.Item1;
+            MetaData.Author2 = blubb.Item2;
         }
 
         public void Dispose()
