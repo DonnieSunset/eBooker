@@ -13,11 +13,10 @@ namespace BE
 
         public record MetaDataRecord
         {
-            public Author? Author1 { get; set; } = null;
-            public Author? Author2 { get; set; } = null;
+            public Authors Authors {  get; set; } = new Authors();
         }
 
-        private MetaDataRecord? myMetaData = null;           
+        private MetaDataRecord? myMetaData = null;
 
         public MetaDataRecord MetaData 
         {
@@ -25,6 +24,7 @@ namespace BE
             { 
                 if (myMetaData == null)
                 {
+                    myMetaData = new MetaDataRecord();
                     this.ReadMetaData();
                 }
                 return myMetaData!;
@@ -158,28 +158,13 @@ namespace BE
 
         public void UpdateAuthors(Author author1, Author author2)
         {
-            Authors authors = new Authors();
-            authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?> ( author1, author2 ));
-
-            //Important, otherwise it will not get saved
+            MetaData.Authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?>(author1, author2));
             Dispose();
-
-            ReadMetaDataAuthors();
         }
 
         private void ReadMetaData()
         {
-            myMetaData = new MetaDataRecord();
-
-            ReadMetaDataAuthors();
-        }
-
-        private void ReadMetaDataAuthors()
-        {
-            Authors authors = new Authors();
-            var blubb = authors.Read(OpfEntryRead);
-            MetaData.Author1 = blubb.Item1;
-            MetaData.Author2 = blubb.Item2;
+            MetaData.Authors.Read(OpfEntryRead);
         }
 
         public void Dispose()

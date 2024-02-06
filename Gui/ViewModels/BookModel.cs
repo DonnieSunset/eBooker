@@ -69,15 +69,15 @@ namespace Gui.ViewModels
 
         public string GetAuthor1()
         {
-            return (eBook.MetaData.Author1 != null)
-                ? eBook.MetaData.Author1.DisplayName
+            return (eBook.MetaData.Authors?.Data?.Item1 != null)
+                ? eBook.MetaData.Authors.Data.Item1.DisplayName
                 : string.Empty;
         }
 
         public string GetAuthor2()
         {
-            return (eBook.MetaData.Author2 != null)
-                ? eBook.MetaData.Author2.DisplayName
+            return (eBook.MetaData.Authors?.Data?.Item2 != null)
+                ? eBook.MetaData.Authors.Data.Item2.DisplayName
                 : string.Empty;
         }
     }

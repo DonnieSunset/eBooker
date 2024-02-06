@@ -3,14 +3,14 @@ using System.Xml.Linq;
 
 namespace BE.MetaData
 {
-    public class Authors : MetaDataBase, IMetaData<Tuple<Author?, Author?>>
+    public class Authors : MetaDataBase<Tuple<Author?, Author?>>, IMetaData<Tuple<Author?, Author?>>
     {
-        public Tuple<Author?, Author?> Read(ZipArchiveEntry opfEntry)
+        public void Read(ZipArchiveEntry opfEntry)
         {
             using (var opfStream = opfEntry.Open())
             {
                 XDocument xmlDoc = XDocument.Load(opfStream);
-                return Get(xmlDoc);
+                base.Data = Get(xmlDoc);
             }
         }
 
@@ -33,6 +33,8 @@ namespace BE.MetaData
                 Set(xmlDoc, data);
                 UpdateOpfInArchive(opfStream, xmlDoc);
             }
+
+            Read(opfEntry);
         }
 
         public Tuple<Author?, Author?> Get(XDocument opfDocument)

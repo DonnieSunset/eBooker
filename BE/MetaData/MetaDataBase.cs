@@ -2,8 +2,10 @@
 
 namespace BE.MetaData
 {
-    public class MetaDataBase
+    public class MetaDataBase<T>
     {
+        public T? Data { get; set; }
+
         protected (XElement, XNamespace, XNamespace) GetMetaDataSection(XDocument opfDocument)
         {
             var xmlRoot = opfDocument.Root;

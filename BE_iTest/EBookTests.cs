@@ -72,8 +72,8 @@ namespace BE_iTest
             var ebookTempFileLocation = CreateLocalCopy(epubFile);
 
             var eBook = new eBook(ebookTempFileLocation);
-            Assert.That(eBook.MetaData.Author1, Is.Null, "Author1");
-            Assert.That(eBook.MetaData.Author2, Is.Null, "Author2");
+            Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Null, "Author1");
+            Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Null, "Author2");
 
             var newAuthor = new Author("McQuillington, Chuckle ");
 
@@ -82,9 +82,9 @@ namespace BE_iTest
 
             eBook = new eBook(ebookTempFileLocation);
             
-            Assert.That(eBook.MetaData.Author1, Is.Not.Null, "Author1");
-            Assert.That(eBook.MetaData.Author1.SortName, Is.EqualTo("McQuillington, Chuckle"));
-            Assert.That(eBook.MetaData.Author2, Is.Null, "Author2");
+            Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Not.Null, "Author1");
+            Assert.That(eBook.MetaData.Authors.Data.Item1.SortName, Is.EqualTo("McQuillington, Chuckle"));
+            Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Null, "Author2");
         }
 
         [Test]
@@ -94,8 +94,8 @@ namespace BE_iTest
             var ebookTempFileLocation = CreateLocalCopy(epubFile);
 
             var eBook = new eBook(ebookTempFileLocation);
-            Assert.That(eBook.MetaData.Author1, Is.Not.Null, "Author1");
-            Assert.That(eBook.MetaData.Author2, Is.Null, "Author2");
+            Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Not.Null, "Author1");
+            Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Null, "Author2");
 
             var newAuthor1 = new Author("McQuillington, Chuckle ");
             var newAuthor2 = new Author("Stephen King");
@@ -104,10 +104,10 @@ namespace BE_iTest
             eBook.Dispose();
 
             eBook = new eBook(ebookTempFileLocation);
-            Assert.That(eBook.MetaData.Author1, Is.Not.Null, "Author1");
-            Assert.That(eBook.MetaData.Author1.DisplayName, Is.EqualTo("Chuckle McQuillington"));
-            Assert.That(eBook.MetaData.Author2, Is.Not.Null, "Author2");
-            Assert.That(eBook.MetaData.Author2.DisplayName, Is.EqualTo("Stephen King"));
+            Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Not.Null, "Author1");
+            Assert.That(eBook.MetaData.Authors.Data.Item1.DisplayName, Is.EqualTo("Chuckle McQuillington"));
+            Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Not.Null, "Author2");
+            Assert.That(eBook.MetaData.Authors.Data.Item2.DisplayName, Is.EqualTo("Stephen King"));
         }
 
         [Test]
@@ -117,8 +117,8 @@ namespace BE_iTest
             var ebookTempFileLocation = CreateLocalCopy(epubFile);
 
             var eBook = new eBook(ebookTempFileLocation);
-            Assert.That(eBook.MetaData.Author1, Is.Not.Null, "Author1");
-            Assert.That(eBook.MetaData.Author2, Is.Not.Null, "Author2");
+            Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Not.Null, "Author1");
+            Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Not.Null, "Author2");
 
             var newAuthor1 = new Author("McQuillington, Chuckle ");
 
@@ -126,9 +126,9 @@ namespace BE_iTest
             eBook.Dispose();
 
             eBook = new eBook(ebookTempFileLocation);
-            Assert.That(eBook.MetaData.Author1, Is.Not.Null, "Author1");
-            Assert.That(eBook.MetaData.Author1.DisplayName, Is.EqualTo("Chuckle McQuillington"));
-            Assert.That(eBook.MetaData.Author2, Is.Null, "Author2");
+            Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Not.Null, "Author1");
+            Assert.That(eBook.MetaData.Authors.Data.Item1.DisplayName, Is.EqualTo("Chuckle McQuillington"));
+            Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Null, "Author2");
         }
 
         [Test]
@@ -144,9 +144,9 @@ namespace BE_iTest
                 eBook.Dispose();
 
                 eBook = new eBook(ebookTempFileLocation);
-                Assert.That(eBook.MetaData.Author1, Is.Not.Null, "Author1");
-                Assert.That(eBook.MetaData.Author1.SortName, Is.EqualTo("McQuillington, Chuckle"));
-                Assert.That(eBook.MetaData.Author2, Is.Null, "Author2");
+                Assert.That(eBook.MetaData.Authors.Data.Item1, Is.Not.Null, "Author1");
+                Assert.That(eBook.MetaData.Authors.Data.Item1.SortName, Is.EqualTo("McQuillington, Chuckle"));
+                Assert.That(eBook.MetaData.Authors.Data.Item2, Is.Null, "Author2");
             }
         }
 

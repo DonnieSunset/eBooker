@@ -5,7 +5,7 @@ namespace BE.MetaData
 {
     public interface IMetaData<T>
     {
-        T Read(ZipArchiveEntry opfEntry);
+        void Read(ZipArchiveEntry opfEntry);
 
         void Write(ZipArchiveEntry opfEntry, T data);
 
