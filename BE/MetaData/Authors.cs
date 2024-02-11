@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace BE.MetaData
 {
-    public class Authors : MetaDataBase<Tuple<Author?, Author?>>, IMetaData<Tuple<Author?, Author?>>
+    public class Authors : MetaDataBase<Tuple<Author?, Author?>>
     {
         public void Read(ZipArchiveEntry opfEntry)
         {

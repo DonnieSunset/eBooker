@@ -1,10 +1,11 @@
 ﻿using BE;
+using BE.MetaData;
 using System.Xml.Linq;
 
 namespace BE_iTest
 {
     [TestFixture]
-    internal class OpfModifierTests
+    internal class CoverTests
     {
         [Test]
         public void RemoveCoverMetaEntries_NoCoverEntries_ReturnsEmptyList()
@@ -23,8 +24,9 @@ namespace BE_iTest
                 """;
 
             XDocument opfDoc = XDocument.Parse(opfString);
+            Cover testee = new Cover();
 
-            var coverContentIDs = OpfModifier.RemoveCoverMetaEntries(opfDoc);
+            var coverContentIDs = testee.RemoveCoverMetaEntries(opfDoc);
 
             Assert.That(coverContentIDs, Is.EquivalentTo(new List<string>() { }));
             Assert.That(opfDoc.ToString(), Is.EqualTo(opfString));
@@ -63,7 +65,8 @@ namespace BE_iTest
 
             XDocument opfDoc = XDocument.Parse(opfString);
 
-            var coverContentIDs = OpfModifier.RemoveCoverMetaEntries(opfDoc);
+            Cover testee = new Cover();
+            var coverContentIDs = testee.RemoveCoverMetaEntries(opfDoc);
 
             Assert.That(coverContentIDs, Is.EquivalentTo(new List<string>() { "cover1", "cover2" }));
             Assert.That(opfDoc.ToString(), Is.EqualTo(opfStringExpectedResult));
@@ -89,7 +92,8 @@ namespace BE_iTest
 
             XDocument opfDoc = XDocument.Parse(opfString);
 
-            OpfModifier.RemoveCoverManifestEntries(opfDoc, new List<string>() {"Cover1", "cover2", "" });
+            Cover testee = new Cover();
+            testee.RemoveCoverManifestEntries(opfDoc, new List<string>() {"Cover1", "cover2", "" });
 
             Assert.That(opfDoc.ToString(), Is.EqualTo(opfString));
         }
@@ -127,7 +131,8 @@ namespace BE_iTest
 
             XDocument opfDoc = XDocument.Parse(opfString);
 
-            OpfModifier.RemoveCoverManifestEntries(opfDoc, new List<string>() { "Cover2", "cover3", "unMatched" });
+            Cover testee = new Cover();
+            testee.RemoveCoverManifestEntries(opfDoc, new List<string>() { "Cover2", "cover3", "unMatched" });
 
             Assert.That(opfDoc.ToString(), Is.EqualTo(opfStringExpectedResult));
         }
@@ -163,7 +168,8 @@ namespace BE_iTest
 
             XDocument opfDoc = XDocument.Parse(opfString);
 
-            OpfModifier.AddCoverEntry(opfDoc, "cover1.jpg");
+            Cover testee = new Cover();
+            testee.AddCoverEntry(opfDoc, "cover1.jpg");
 
             Assert.That(opfDoc.ToString(), Is.EqualTo(opfStringExpectedResult));
         }

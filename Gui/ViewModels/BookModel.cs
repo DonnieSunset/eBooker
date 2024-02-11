@@ -7,36 +7,7 @@ namespace Gui.ViewModels
     {
         private eBook eBook = new eBook(fileLoction);
 
-        private StreamImageSource? imageSource = null;
-        private MemoryStream? imageMemoryStream = null;
-
         public string FileLocation { get; set; } = fileLoction;
-
-        public MemoryStream ImageMemoryStream
-        {
-            get
-            {
-                if (imageMemoryStream == null)
-                    imageMemoryStream = eBook.GetCover();
-
-                return imageMemoryStream;
-            }
-        }
-
-        public StreamImageSource ImageSource
-        {
-            get
-            {
-                if (imageSource == null)
-                    imageSource = ConvertFromMemoryStream(ImageMemoryStream);
-
-                return imageSource;
-            }
-            set
-            {
-                imageSource = value;
-            }
-        }
 
         public StreamImageSource ConvertFromMemoryStream(MemoryStream memoryStream)
         {
@@ -49,36 +20,47 @@ namespace Gui.ViewModels
             return (StreamImageSource)StreamImageSource.FromStream(() => { return copied; });
         }
 
-        public void UpdateCover(string coverFileLocation)
+        public string GetAuthor1()
         {
-            eBook.UpdateCover(coverFileLocation);
+            Author author1 = eBook.GetAuthors().Item1;
+
+            return (author1 != null)
+                ? author1.DisplayName
+                : string.Empty;
+        }
+
+        public string GetAuthor2()
+        {
+            Author author2 = eBook.GetAuthors().Item2;
+
+            return (author2 != null)
+                ? author2.DisplayName
+                : string.Empty;
         }
 
         public void UpdateAuthors(string? author1, string? author2)
         {
-            Author? authorObj1 = !String.IsNullOrEmpty(author1) ?
+            Author? authorObj1 = !string.IsNullOrEmpty(author1) ?
                 new Author(author1) :
                 null;
 
-            Author? authorObj2 = !String.IsNullOrEmpty(author2) ?
+            Author? authorObj2 = !string.IsNullOrEmpty(author2) ?
                 new Author(author2) :
                 null;
 
             eBook.UpdateAuthors(authorObj1, authorObj2);
         }
 
-        public string GetAuthor1()
+        public StreamImageSource? GetCover()
         {
-            return (eBook.MetaData.Authors?.Data?.Item1 != null)
-                ? eBook.MetaData.Authors.Data.Item1.DisplayName
-                : string.Empty;
+            return (eBook.GetCover() != null)
+                ? ConvertFromMemoryStream(eBook.GetCover())
+                : null;
         }
 
-        public string GetAuthor2()
+        public void UpdateCover(string coverFileLocation)
         {
-            return (eBook.MetaData.Authors?.Data?.Item2 != null)
-                ? eBook.MetaData.Authors.Data.Item2.DisplayName
-                : string.Empty;
+            eBook.UpdateCover(coverFileLocation);
         }
     }
 }

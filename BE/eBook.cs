@@ -1,6 +1,5 @@
-﻿using System.IO.Compression;
-using System.Xml.Linq;
-using BE.MetaData;
+﻿using BE.MetaData;
+using System.IO.Compression;
 
 namespace BE
 {
@@ -9,37 +8,18 @@ namespace BE
         private string myFileLocation = fileLocation;
 
         private ZipArchive myZipArchive = null;
-        private Cover myCover = new Cover();
 
-        public record MetaDataRecord
-        {
-            public Authors Authors {  get; set; } = new Authors();
-        }
+        private MetaDataRecord MetaData = new MetaDataRecord();
 
-        private MetaDataRecord? myMetaData = null;
-
-        public MetaDataRecord MetaData 
+        internal ZipArchive ZipArchiveRead
         {
             get
-            { 
-                if (myMetaData == null)
-                {
-                    myMetaData = new MetaDataRecord();
-                    this.ReadMetaData();
-                }
-                return myMetaData!;
-            }
-        }
-
-        internal ZipArchive ZipArchiveRead 
-        {
-            get
-            { 
+            {
                 if (myZipArchive == null)
                 {
                     myZipArchive = ZipFile.OpenRead(myFileLocation);
                 }
-                
+
                 return myZipArchive;
             }
         }
@@ -53,27 +33,25 @@ namespace BE
                     myZipArchive = ZipFile.Open(myFileLocation, ZipArchiveMode.Update);
                 }
                 else if (myZipArchive.Mode != ZipArchiveMode.Update)
-                { 
+                {
                     Dispose();
                     myZipArchive = ZipFile.Open(myFileLocation, ZipArchiveMode.Update);
                 }
-                
+
                 return myZipArchive;
             }
         }
 
         private ZipArchiveEntry? myOpfEntry = null;
-        private string? myOpfRelativePath = null;
         public ZipArchiveEntry OpfEntryRead
-        { 
+        {
             get
             {
                 if (myOpfEntry == null)
                 {
                     myOpfEntry = ReloadOpfFromArchive(ZipArchiveRead);
-                    myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
                 }
-                
+
                 return myOpfEntry;
             }
         }
@@ -85,87 +63,55 @@ namespace BE
                 if (myOpfEntry == null || myOpfEntry.Archive.Mode != ZipArchiveMode.Update)
                 {
                     myOpfEntry = ReloadOpfFromArchive(ZipArchiveUpdate);
-                    myOpfRelativePath = myOpfEntry.FullName.Replace(myOpfEntry.Name, string.Empty);
                 }
 
                 return myOpfEntry;
             }
         }
 
-
-        public MemoryStream GetCover()
+        public MemoryStream? GetCover()
         {
-            return myCover.GetImage(GetCoverArchiveEntry());
+            if (MetaData.Cover == null)
+            {
+                this.MetaData.Cover = new Cover();
+                this.MetaData.Cover.Read(ZipArchiveRead, OpfEntryRead);
+            }
+
+            return MetaData.Cover.Data;
         }
 
-        public ZipArchiveEntry? GetCoverArchiveEntry()
+        public Tuple<Author, Author> GetAuthors()
         {
-            var opfFile = OpfEntryRead;
-            using (var opfStream = opfFile.Open())
+            if (MetaData.Authors == null)
             {
-                XDocument opfXmlDoc = XDocument.Load(opfStream);
-                List<string> opfMetaEntries = OpfModifier.GetCoverMetaEntries(opfXmlDoc);
-                List<string> opfManifestEntries = OpfModifier.GetCoverManifestEntries(opfXmlDoc, opfMetaEntries);
-
-                if (opfManifestEntries == null || opfManifestEntries.Count == 0)
-                {
-                    return null;
-                }
-                else if (opfManifestEntries.Count > 1)
-                {
-                    throw new EbookerException($"Could not identify unique cover entry for ebook <{myFileLocation}>. " +
-                        $"Candidates are: {Environment.NewLine} {String.Join(Environment.NewLine, opfManifestEntries)}");
-                }
-                else
-                {
-                    string coverLink = opfManifestEntries.Single();
-                    string relativeCoverLink = myOpfRelativePath + coverLink;
-                    return ZipArchiveRead.Entries.FirstOrDefault(
-                        x => x.FullName.Equals(relativeCoverLink, StringComparison.CurrentCultureIgnoreCase));
-                }
+                MetaData.Authors = new Authors();
+                MetaData.Authors.Read(OpfEntryRead);
             }
+
+            return MetaData.Authors.Data;
         }
 
         public void UpdateCover(string coverFileLocation)
         {
-            using (var opfStream = OpfEntryUpdate.Open())
+            if (MetaData.Cover == null)
             {
-                // cover shall be placed always at the same folder level as the opf
-                // such that we dont have to deal with relative paths
-                string relativePathOfOpfFile = myOpfRelativePath;
-                string coverFileName = "cover.jpg";
-                string coverLocationInsideArchive = relativePathOfOpfFile + coverFileName;
-
-                XDocument xmlDoc = XDocument.Load(opfStream);
-
-                var metaDataCoverIDs = OpfModifier.RemoveCoverMetaEntries(xmlDoc);
-                var existingCoverFiles = OpfModifier.RemoveCoverManifestEntries(xmlDoc, metaDataCoverIDs);
-                OpfModifier.AddCoverEntry(xmlDoc, coverFileName);
-                UpdateOpfInArchive(opfStream, xmlDoc);
-
-                RemoveCoverFilesFromArchive(relativePathOfOpfFile, existingCoverFiles);
-
-                // sometimes the exact same cover file already exists even without being
-                // referenced in the opf metadata
-                TryRemoveCoverFilesFromArchive(string.Empty, [coverLocationInsideArchive]);
-
-                WriteCoverFileToArchive(coverFileLocation, coverLocationInsideArchive);
+                this.MetaData.Cover = new Cover();
             }
-
-            //Important, otherwise it will not get saved
+            
+            this.MetaData.Cover.Write(ZipArchiveUpdate, OpfEntryUpdate, coverFileLocation);
             Dispose();
         }
 
-        public void UpdateAuthors(Author author1, Author author2)
+        public void UpdateAuthors(Author? author1, Author? author2)
         {
+            if (MetaData.Authors == null)
+            {
+                this.MetaData.Authors = new Authors();
+            }
             MetaData.Authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?>(author1, author2));
             Dispose();
         }
 
-        private void ReadMetaData()
-        {
-            MetaData.Authors.Read(OpfEntryRead);
-        }
 
         public void Dispose()
         {
@@ -174,58 +120,7 @@ namespace BE
             myZipArchive = null;
         }
 
-        private void UpdateOpfInArchive(Stream opfStream, XDocument xmlDoc)
-        {
-            opfStream.Position = 0;
-            using (StreamWriter writer = new StreamWriter(opfStream))
-            {
-                writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + Environment.NewLine);
-                writer.Write(xmlDoc);
-                opfStream.SetLength(opfStream.Position);
-            }
-        }
-
-        private void WriteCoverFileToArchive(string coverFileLocation, string coverFileLocationInArchive)
-        {
-            ZipArchiveUpdate.CreateEntryFromFile(coverFileLocation, coverFileLocationInArchive);
-        }
-
-        private void RemoveCoverFilesFromArchive(string relativePath, List<string> zipCoverEntries)
-        {
-            foreach (string zipCoverEntry in zipCoverEntries)
-            {
-                string completePath = relativePath + zipCoverEntry;
-
-                //remove relative entries, e.g. OEBPS/images/../cover.jpeg should result to OEBPS/cover.jpeg
-                completePath = ResolveDirectoryJumps(completePath);
-
-                // there can also be multiple entries of the same file in a zip file, which is an error case, but should be handled 
-                var foundEntries = ZipArchiveUpdate.Entries.Where(x => x.FullName.Equals(completePath));
-                if (foundEntries.Count() == 0)
-                {
-                    throw new EbookerException($"Could not find referenced cover file with href <{completePath}> in zipfile <{myFileLocation}>.");
-                }
-
-                foreach (var entry in foundEntries.ToArray())
-                { 
-                    entry.Delete();
-                }
-            }
-        }
-
-        private bool TryRemoveCoverFilesFromArchive(string relativePath, List<string> zipCoverEntries)
-        {
-            try
-            {
-                RemoveCoverFilesFromArchive(relativePath, zipCoverEntries);
-                return true;
-            }
-            catch 
-            {
-                return false;
-            }
-        }
-
+        // todo: remove duplicate code
         internal string ResolveDirectoryJumps(string inputPath)
         {
             if (inputPath.StartsWith(".."))

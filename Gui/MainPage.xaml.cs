@@ -83,12 +83,12 @@ namespace Gui
             PickerEbookStores.IsEnabled = true;
         }
 
-        private Image CreateImageFromBookModel(BookModel book)
+        private Image CreateImageFromBookModel(BookModel bookModel)
         {
             var image = new Image
             {
-                BindingContext = book,
-                Source = book.ImageSource,
+                BindingContext = bookModel,
+                Source = bookModel.GetCover(),
 
                 WidthRequest = 200,
                 HeightRequest = 300,
@@ -119,11 +119,12 @@ namespace Gui
 
         private void UpdateRightPaneThumbnail(BookModel bookModel)
         {
-            ImageThumb.Source = bookModel.ImageMemoryStream?.Length == 0
+            ImageThumb.Source = bookModel.GetCover() == null
                 // at the time of implementation, this worked only with png format
                 // and only with embedded resource as build action (not MauiImage)
                 ? ImageSource.FromResource("Gui.Resources.Images.no_cover.png", Assembly.GetCallingAssembly())
-                : bookModel.ConvertFromMemoryStream(bookModel.ImageMemoryStream);
+                : bookModel.GetCover();
+            
             ImageThumb.BindingContext = bookModel;
 
             ButtonSaveChanges.BindingContext = bookModel;
@@ -181,7 +182,7 @@ namespace Gui
                 var result = await FilePicker.Default.PickAsync(pickOptions);
                 if (result != null)
                 {
-                    var memStream = BE.Cover.GetMemoryStreamFromFile(result.FullPath);
+                    var memStream = BE.CoverHelper.GetMemoryStreamFromFile(result.FullPath);
                     ImageThumb.Source = book.ConvertFromMemoryStream(memStream);
 
                     myViewModel.ImageChanged = true;
