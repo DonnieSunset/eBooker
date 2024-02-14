@@ -23,7 +23,7 @@ namespace Gui
             Opacity = 0.8f
         };
 
-        private MainViewModel myViewModel = null;
+        private MainViewModel _viewModel = null;
 
         public MainPage()
         {
@@ -33,7 +33,7 @@ namespace Gui
             var configuration = MauiProgram.Services.GetService<IConfiguration>();
             var stores = configuration.Get<AppSettings>();
 
-            myViewModel = (MainViewModel)this.BindingContext;
+            _viewModel = (MainViewModel)this.BindingContext;
 
             PickerEbookStores.ItemsSource = stores.EBookStores;
             PickerEbookStores.SelectedIndexChanged += async (object? sender, EventArgs e) => { await PickerEbookStores_RebuildBookListAndFlexLayoutAsync(sender, e); };
@@ -61,25 +61,25 @@ namespace Gui
             // Flexlayout cannot be bound to a data source in xaml
             // https://github.com/dotnet/maui/issues/7747
 
-            myViewModel.StoreLocation = PickerEbookStores.SelectedItem as string;
+            _viewModel.StoreLocation = PickerEbookStores.SelectedItem as string;
             ImageFlexLayout.Clear();
-            myViewModel.ResetBookList();
+            _viewModel.ResetBookList();
 
             double act = 0d;
-            foreach (var epubFile in myViewModel.EpubFileList)
+            foreach (var epubFile in _viewModel.EpubFileList)
             {
                 Image image = null;
                 await Task.Run(() =>
                 {
-                    var bookModel = myViewModel.AddBookModelFrom(epubFile);
+                    var bookModel = _viewModel.AddBookModelFrom(epubFile);
                     image = CreateImageFromBookModel(bookModel);
                 });
                 ImageFlexLayout.Add(image);
-                ProgressBar.Progress = act++ / myViewModel.EpubFileList.Count;
-                ProgressBarLabel.Text = $"{(int)(ProgressBar.Progress*100)}% ({act} of {myViewModel.EpubFileList.Count} ebooks loaded)";
+                ProgressBar.Progress = act++ / _viewModel.EpubFileList.Count;
+                ProgressBarLabel.Text = $"{(int)(ProgressBar.Progress*100)}% ({act} of {_viewModel.EpubFileList.Count} ebooks loaded)";
             }
 
-            ProgressBarLabel.Text = $"Loading of {myViewModel.EpubFileList.Count} ebooks took {sw.Elapsed.TotalSeconds} sec.";
+            ProgressBarLabel.Text = $"Loading of {_viewModel.EpubFileList.Count} ebooks took {sw.Elapsed.TotalSeconds} sec.";
             PickerEbookStores.IsEnabled = true;
         }
 
@@ -132,9 +132,9 @@ namespace Gui
             EntryLocation.Text = bookModel.FileLocation;
 
             ButtonSaveChanges.IsEnabled = false;
-            myViewModel.AuthorsChanged = false;
-            myViewModel.ImageChanged = false;
-            myViewModel.ImageChangedFileLocation = string.Empty;
+            _viewModel.AuthorsChanged = false;
+            _viewModel.ImageChanged = false;
+            _viewModel.ImageChangedFileLocation = string.Empty;
         }
 
         private void UpdateRightPaneMetaData(BookModel bookModel)
@@ -167,7 +167,7 @@ namespace Gui
 
         private void EntryAuthor_TextChanged(object? sender, TextChangedEventArgs e)
         {
-            myViewModel.AuthorsChanged = true;
+            _viewModel.AuthorsChanged = true;
             ButtonSaveChanges.IsEnabled = true;
         }
 
@@ -185,16 +185,16 @@ namespace Gui
                     var memStream = GetMemoryStreamFromFile(result.FullPath);
                     ImageThumb.Source = book.ConvertFromMemoryStream(memStream);
 
-                    myViewModel.ImageChanged = true;
-                    myViewModel.ImageChangedFileLocation = result.FullPath;
+                    _viewModel.ImageChanged = true;
+                    _viewModel.ImageChangedFileLocation = result.FullPath;
                     ButtonSaveChanges.IsEnabled = true;
                 }
             }
             catch (Exception ex)
             {
-                myViewModel.AuthorsChanged = false;
-                myViewModel.ImageChanged = false;
-                myViewModel.ImageChangedFileLocation = string.Empty;
+                _viewModel.AuthorsChanged = false;
+                _viewModel.ImageChanged = false;
+                _viewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
 
                 await DisplayAlert("Exception happened!", ex.Message, "Got it!");
@@ -225,9 +225,9 @@ namespace Gui
                 var saveChangesButton = (Button)sender;
                 var bookModel = (BookModel)saveChangesButton.BindingContext;
 
-                if (myViewModel.ImageChanged == true && !String.IsNullOrEmpty(myViewModel.ImageChangedFileLocation))
+                if (_viewModel.ImageChanged == true && !String.IsNullOrEmpty(_viewModel.ImageChangedFileLocation))
                 {
-                    bookModel.UpdateCover(myViewModel.ImageChangedFileLocation);
+                    bookModel.UpdateCover(_viewModel.ImageChangedFileLocation);
 
                     var outdatedThumbnail = ImageFlexLayout.Children.Single(image => ((Image)image).BindingContext == bookModel);
                     var outdatedThumbnailIndex = ImageFlexLayout.Children.IndexOf(outdatedThumbnail);
@@ -239,7 +239,7 @@ namespace Gui
                     ImageFlexLayout.Children[outdatedThumbnailIndex] = newThumbNail;
                 }
 
-                if (myViewModel.AuthorsChanged == true)
+                if (_viewModel.AuthorsChanged == true)
                 {
                     bookModel.UpdateAuthors(EntryAuthor1.Text, EntryAuthor2.Text);
                     UpdateRightPaneMetaData(bookModel);
@@ -251,9 +251,9 @@ namespace Gui
             }
             finally
             {
-                myViewModel.AuthorsChanged = false;
-                myViewModel.ImageChanged = false;
-                myViewModel.ImageChangedFileLocation = string.Empty;
+                _viewModel.AuthorsChanged = false;
+                _viewModel.ImageChanged = false;
+                _viewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
             }
         }

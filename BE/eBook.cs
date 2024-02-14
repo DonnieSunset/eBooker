@@ -5,22 +5,22 @@ namespace BE
 {
     public class eBook(string fileLocation) : IDisposable
     {
-        private string myFileLocation = fileLocation;
+        private string _fileLocation = fileLocation;
 
-        private ZipArchive myZipArchive = null;
+        private ZipArchive _zipArchive = null;
 
-        private MetaDataRecord MetaData = new MetaDataRecord();
+        private MetaDataRecord _metaData = new MetaDataRecord();
 
         internal ZipArchive ZipArchiveRead
         {
             get
             {
-                if (myZipArchive == null)
+                if (_zipArchive == null)
                 {
-                    myZipArchive = ZipFile.OpenRead(myFileLocation);
+                    _zipArchive = ZipFile.OpenRead(_fileLocation);
                 }
 
-                return myZipArchive;
+                return _zipArchive;
             }
         }
 
@@ -28,31 +28,31 @@ namespace BE
         {
             get
             {
-                if (myZipArchive == null)
+                if (_zipArchive == null)
                 {
-                    myZipArchive = ZipFile.Open(myFileLocation, ZipArchiveMode.Update);
+                    _zipArchive = ZipFile.Open(_fileLocation, ZipArchiveMode.Update);
                 }
-                else if (myZipArchive.Mode != ZipArchiveMode.Update)
+                else if (_zipArchive.Mode != ZipArchiveMode.Update)
                 {
                     Dispose();
-                    myZipArchive = ZipFile.Open(myFileLocation, ZipArchiveMode.Update);
+                    _zipArchive = ZipFile.Open(_fileLocation, ZipArchiveMode.Update);
                 }
 
-                return myZipArchive;
+                return _zipArchive;
             }
         }
 
-        private ZipArchiveEntry? myOpfEntry = null;
+        private ZipArchiveEntry? _opfEntry = null;
         public ZipArchiveEntry OpfEntryRead
         {
             get
             {
-                if (myOpfEntry == null)
+                if (_opfEntry == null)
                 {
-                    myOpfEntry = ReloadOpfFromArchive(ZipArchiveRead);
+                    _opfEntry = ReloadOpfFromArchive(ZipArchiveRead);
                 }
 
-                return myOpfEntry;
+                return _opfEntry;
             }
         }
 
@@ -60,64 +60,64 @@ namespace BE
         {
             get
             {
-                if (myOpfEntry == null || myOpfEntry.Archive.Mode != ZipArchiveMode.Update)
+                if (_opfEntry == null || _opfEntry.Archive.Mode != ZipArchiveMode.Update)
                 {
-                    myOpfEntry = ReloadOpfFromArchive(ZipArchiveUpdate);
+                    _opfEntry = ReloadOpfFromArchive(ZipArchiveUpdate);
                 }
 
-                return myOpfEntry;
+                return _opfEntry;
             }
         }
 
         public MemoryStream? GetCover()
         {
-            if (MetaData.Cover == null)
+            if (_metaData.Cover == null)
             {
-                this.MetaData.Cover = new Cover();
-                this.MetaData.Cover.Read(ZipArchiveRead, OpfEntryRead);
+                this._metaData.Cover = new Cover();
+                this._metaData.Cover.Read(ZipArchiveRead, OpfEntryRead);
             }
 
-            return MetaData.Cover.Data;
+            return _metaData.Cover.Data;
         }
 
         public Tuple<Author, Author> GetAuthors()
         {
-            if (MetaData.Authors == null)
+            if (_metaData.Authors == null)
             {
-                MetaData.Authors = new Authors();
-                MetaData.Authors.Read(OpfEntryRead);
+                _metaData.Authors = new Authors();
+                _metaData.Authors.Read(OpfEntryRead);
             }
 
-            return MetaData.Authors.Data;
+            return _metaData.Authors.Data;
         }
 
         public void UpdateCover(string coverFileLocation)
         {
-            if (MetaData.Cover == null)
+            if (_metaData.Cover == null)
             {
-                this.MetaData.Cover = new Cover();
+                this._metaData.Cover = new Cover();
             }
             
-            this.MetaData.Cover.Write(ZipArchiveUpdate, OpfEntryUpdate, coverFileLocation);
+            this._metaData.Cover.Write(ZipArchiveUpdate, OpfEntryUpdate, coverFileLocation);
             Dispose();
         }
 
         public void UpdateAuthors(Author? author1, Author? author2)
         {
-            if (MetaData.Authors == null)
+            if (_metaData.Authors == null)
             {
-                this.MetaData.Authors = new Authors();
+                this._metaData.Authors = new Authors();
             }
-            MetaData.Authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?>(author1, author2));
+            _metaData.Authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?>(author1, author2));
             Dispose();
         }
 
 
         public void Dispose()
         {
-            myOpfEntry = null;
-            myZipArchive?.Dispose();
-            myZipArchive = null;
+            _opfEntry = null;
+            _zipArchive?.Dispose();
+            _zipArchive = null;
         }
 
         // todo: remove duplicate code
@@ -143,19 +143,19 @@ namespace BE
         {
             try
             {
-                myOpfEntry = zipArchive.Entries?.SingleOrDefault(
+                _opfEntry = zipArchive.Entries?.SingleOrDefault(
                    x => x.Name.EndsWith(".opf", StringComparison.CurrentCultureIgnoreCase));
 
-                if (myOpfEntry == null)
+                if (_opfEntry == null)
                 {
-                    throw new EbookerException($"Could not find opf file in ebook <{myFileLocation}>.");
+                    throw new EbookerException($"Could not find opf file in ebook <{_fileLocation}>.");
                 }
 
-                return myOpfEntry;
+                return _opfEntry;
             }
             catch (InvalidOperationException ex)
             {
-                throw new EbookerException($"Seems there are multiple opf file in ebook <{myFileLocation}>. See inner exception for more details.", ex);
+                throw new EbookerException($"Seems there are multiple opf file in ebook <{_fileLocation}>. See inner exception for more details.", ex);
             }
         }
     }
