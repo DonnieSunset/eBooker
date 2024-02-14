@@ -182,7 +182,7 @@ namespace Gui
                 var result = await FilePicker.Default.PickAsync(pickOptions);
                 if (result != null)
                 {
-                    var memStream = BE.CoverHelper.GetMemoryStreamFromFile(result.FullPath);
+                    var memStream = GetMemoryStreamFromFile(result.FullPath);
                     ImageThumb.Source = book.ConvertFromMemoryStream(memStream);
 
                     myViewModel.ImageChanged = true;
@@ -198,6 +198,23 @@ namespace Gui
                 ButtonSaveChanges.IsEnabled = false;
 
                 await DisplayAlert("Exception happened!", ex.Message, "Got it!");
+            }
+        }
+
+        private MemoryStream? GetMemoryStreamFromFile(string fileLocation)
+        {
+            try
+            {
+                FileStream fileStream = new FileStream(fileLocation, FileMode.Open, FileAccess.Read);
+                Byte[] byteArray = new Byte[fileStream.Length];
+                fileStream.Read(byteArray, 0, byteArray.Length);
+                fileStream.Close();
+
+                return new MemoryStream(byteArray);
+            }
+            catch
+            {
+                return null;
             }
         }
 
