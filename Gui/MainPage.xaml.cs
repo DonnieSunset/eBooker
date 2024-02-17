@@ -132,8 +132,9 @@ namespace Gui
             EntryLocation.Text = bookModel.FileLocation;
 
             ButtonSaveChanges.IsEnabled = false;
-            _viewModel.AuthorsChanged = false;
+            _viewModel._authorsChanged = false;
             _viewModel.ImageChanged = false;
+            _viewModel._titleChanged = false;
             _viewModel.ImageChangedFileLocation = string.Empty;
         }
 
@@ -141,12 +142,15 @@ namespace Gui
         {
             EntryAuthor1.TextChanged -= EntryAuthor_TextChanged;
             EntryAuthor2.TextChanged -= EntryAuthor_TextChanged;
+            EntryTitle.TextChanged -= EntryTitle_TextChanged;
 
             EntryAuthor1.Text = bookModel.GetAuthor1();
             EntryAuthor2.Text = bookModel.GetAuthor2();
+            EntryTitle.Text = bookModel.GetTitle();
 
             EntryAuthor1.TextChanged += EntryAuthor_TextChanged;
             EntryAuthor2.TextChanged += EntryAuthor_TextChanged;
+            EntryTitle.TextChanged += EntryTitle_TextChanged;
         }
 
         private async void UpdateRightPane(object sender)
@@ -167,7 +171,13 @@ namespace Gui
 
         private void EntryAuthor_TextChanged(object? sender, TextChangedEventArgs e)
         {
-            _viewModel.AuthorsChanged = true;
+            _viewModel._authorsChanged = true;
+            ButtonSaveChanges.IsEnabled = true;
+        }
+
+        private void EntryTitle_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            _viewModel._titleChanged = true;
             ButtonSaveChanges.IsEnabled = true;
         }
 
@@ -192,7 +202,8 @@ namespace Gui
             }
             catch (Exception ex)
             {
-                _viewModel.AuthorsChanged = false;
+                _viewModel._authorsChanged = false;
+                _viewModel._titleChanged = false;
                 _viewModel.ImageChanged = false;
                 _viewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;
@@ -239,9 +250,19 @@ namespace Gui
                     ImageFlexLayout.Children[outdatedThumbnailIndex] = newThumbNail;
                 }
 
-                if (_viewModel.AuthorsChanged == true)
+                var updateRightPaneMetaDataNeeded = false;
+                if (_viewModel._authorsChanged == true)
                 {
                     bookModel.UpdateAuthors(EntryAuthor1.Text, EntryAuthor2.Text);
+                    updateRightPaneMetaDataNeeded = true;
+                }
+                if (_viewModel._titleChanged == true)
+                {
+                    bookModel.UpdateTitle(EntryTitle.Text);
+                    updateRightPaneMetaDataNeeded = true;
+                }
+                if (updateRightPaneMetaDataNeeded)
+                {
                     UpdateRightPaneMetaData(bookModel);
                 }
             }
@@ -251,7 +272,8 @@ namespace Gui
             }
             finally
             {
-                _viewModel.AuthorsChanged = false;
+                _viewModel._authorsChanged = false;
+                _viewModel._titleChanged = false;
                 _viewModel.ImageChanged = false;
                 _viewModel.ImageChangedFileLocation = string.Empty;
                 ButtonSaveChanges.IsEnabled = false;

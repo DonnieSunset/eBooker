@@ -91,6 +91,17 @@ namespace BE
             return _metaData.Authors.Data;
         }
 
+        public string? GetTitle()
+        {
+            if (_metaData.Title == null)
+            {
+                _metaData.Title = new Title();
+                _metaData.Title.Read(OpfEntryRead);
+            }
+
+            return _metaData.Title.Data;
+        }
+
         public void UpdateCover(string coverFileLocation)
         {
             if (_metaData.Cover == null)
@@ -109,6 +120,16 @@ namespace BE
                 this._metaData.Authors = new Authors();
             }
             _metaData.Authors.Write(OpfEntryUpdate, new Tuple<Author?, Author?>(author1, author2));
+            Dispose();
+        }
+
+        public void UpdateTitle(string title)
+        {
+            if (_metaData.Title == null)
+            {
+                this._metaData.Title = new Title();
+            }
+            _metaData.Title.Write(OpfEntryUpdate, title);
             Dispose();
         }
 

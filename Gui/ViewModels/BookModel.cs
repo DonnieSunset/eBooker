@@ -5,7 +5,7 @@ namespace Gui.ViewModels
 {
     public class BookModel(string fileLoction)
     {
-        private eBook eBook = new eBook(fileLoction);
+        private eBook _eBook = new eBook(fileLoction);
 
         public string FileLocation { get; set; } = fileLoction;
 
@@ -22,7 +22,7 @@ namespace Gui.ViewModels
 
         public string GetAuthor1()
         {
-            Author author1 = eBook.GetAuthors().Item1;
+            Author author1 = _eBook.GetAuthors().Item1;
 
             return (author1 != null)
                 ? author1.DisplayName
@@ -31,7 +31,7 @@ namespace Gui.ViewModels
 
         public string GetAuthor2()
         {
-            Author author2 = eBook.GetAuthors().Item2;
+            Author author2 = _eBook.GetAuthors().Item2;
 
             return (author2 != null)
                 ? author2.DisplayName
@@ -48,19 +48,33 @@ namespace Gui.ViewModels
                 new Author(author2) :
                 null;
 
-            eBook.UpdateAuthors(authorObj1, authorObj2);
+            _eBook.UpdateAuthors(authorObj1, authorObj2);
         }
 
         public StreamImageSource? GetCover()
         {
-            return (eBook.GetCover() != null)
-                ? ConvertFromMemoryStream(eBook.GetCover())
+            return (_eBook.GetCover() != null)
+                ? ConvertFromMemoryStream(_eBook.GetCover())
                 : null;
         }
 
         public void UpdateCover(string coverFileLocation)
         {
-            eBook.UpdateCover(coverFileLocation);
+            _eBook.UpdateCover(coverFileLocation);
+        }
+
+        public string GetTitle()
+        {
+            string? title = _eBook.GetTitle();
+
+            return (title != null)
+                ? title
+                : string.Empty;
+        }
+
+        public void UpdateTitle(string title)
+        {
+            _eBook.UpdateTitle(title);
         }
     }
 }

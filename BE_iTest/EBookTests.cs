@@ -191,5 +191,26 @@ namespace BE_iTest
 
             return localCopy;
         }
+
+        [Test]
+        public void UpdateMultipleMetadata_AllMetadataIsUpdated()
+        {
+            var epubFile = @"C:\temp\EbookTestData\Special\Special_StandardOpfCoverJpeg.epub";
+            var ebookTempFileLocation = CreateLocalCopy(epubFile);
+            var eBook = new eBook(ebookTempFileLocation);
+
+            var newAuthor = new Author("Monika Belluci");
+            var newTitle = "SomeNewTitle";
+
+            eBook.UpdateAuthors(newAuthor, null);
+            eBook.UpdateTitle(newTitle);
+
+            eBook.Dispose();
+            eBook = new eBook(ebookTempFileLocation);
+
+            Assert.That(() => eBook.GetAuthors().Item1.DisplayName, Is.EqualTo(newAuthor.DisplayName));
+            Assert.That(() => eBook.GetAuthors().Item2, Is.Null);
+            Assert.That(() => eBook.GetTitle(), Is.EqualTo(newTitle));
+        }
     }
 }

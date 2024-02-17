@@ -19,7 +19,8 @@ namespace Gui.ViewModels
             }
         }
 
-        public bool AuthorsChanged = false;
+        public bool _authorsChanged = false;
+        public bool _titleChanged = false;
 
         public string ImageChangedFileLocation = string.Empty;
 
